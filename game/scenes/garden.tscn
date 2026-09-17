@@ -1,14 +1,32 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://scripts/crop_plot.gd" id="1_plot"]
+[ext_resource type="PackedScene" path="res://assets/nature/tree_common_3.glb" id="2_tree3"]
+[ext_resource type="PackedScene" path="res://assets/nature/tree_common_5.glb" id="3_tree5"]
+[ext_resource type="PackedScene" path="res://assets/nature/bush_common_flowers.glb" id="4_bush"]
+[ext_resource type="PackedScene" path="res://assets/buildings/bldg_cottage.glb" id="5_cottage"]
+[ext_resource type="PackedScene" path="res://assets/buildings/bldg_oven.glb" id="6_oven"]
+[ext_resource type="PackedScene" path="res://assets/props/prop_barrel.glb" id="7_barrel"]
+[ext_resource type="PackedScene" path="res://assets/characters/char_garden_wight.glb" id="8_wight"]
+[ext_resource type="PackedScene" path="res://assets/characters/char_forest_spirit.glb" id="9_spirit"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.42, 0.3, 0.2, 1)
+albedo_color = Color(0.45, 0.32, 0.22, 1)
 metallic = 0.0
 metallic_specular = 0.15
 roughness = 1.0
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(8, 8)
+size = Vector2(16, 16)
 material = SubResource("StandardMaterial3D_ground")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_soil"]
+albedo_color = Color(0.26, 0.16, 0.1, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_plot"]
+size = Vector3(0.9, 0.08, 0.9)
+material = SubResource("StandardMaterial3D_soil")
 
 [sub_resource type="Environment" id="Environment_garden"]
 background_mode = 1
@@ -21,10 +39,12 @@ tonemap_mode = 2
 [node name="Garden" type="Node3D"]
 
 [node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(0, 9.1925, 7.7135)
+position = Vector3(0, 10, 7.39)
 rotation_degrees = Vector3(-50, 0, 0)
+keep_aspect = 0
 projection = 1
-size = 18.0
+size = 6.0
+far = 200.0
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-50, -40, 0)
@@ -37,3 +57,123 @@ environment = SubResource("Environment_garden")
 
 [node name="Ground" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_ground")
+
+[node name="Plots" type="Node3D" parent="."]
+
+[node name="Plot_-1_-1" type="Node3D" parent="Plots"]
+position = Vector3(-1, 0, -1)
+script = ExtResource("1_plot")
+start_stage = 4
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_-1_-1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_-1_0" type="Node3D" parent="Plots"]
+position = Vector3(-1, 0, 0)
+script = ExtResource("1_plot")
+start_stage = 2
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_-1_0"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_-1_1" type="Node3D" parent="Plots"]
+position = Vector3(-1, 0, 1)
+script = ExtResource("1_plot")
+start_stage = 0
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_-1_1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_0_-1" type="Node3D" parent="Plots"]
+position = Vector3(0, 0, -1)
+script = ExtResource("1_plot")
+start_stage = 3
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_0_-1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_0_0" type="Node3D" parent="Plots"]
+position = Vector3(0, 0, 0)
+script = ExtResource("1_plot")
+start_stage = 4
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_0_0"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_0_1" type="Node3D" parent="Plots"]
+position = Vector3(0, 0, 1)
+script = ExtResource("1_plot")
+start_stage = 1
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_0_1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_1_-1" type="Node3D" parent="Plots"]
+position = Vector3(1, 0, -1)
+script = ExtResource("1_plot")
+start_stage = 2
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_1_-1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_1_0" type="Node3D" parent="Plots"]
+position = Vector3(1, 0, 0)
+script = ExtResource("1_plot")
+start_stage = 0
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_1_0"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Plot_1_1" type="Node3D" parent="Plots"]
+position = Vector3(1, 0, 1)
+script = ExtResource("1_plot")
+start_stage = 3
+
+[node name="Soil" type="MeshInstance3D" parent="Plots/Plot_1_1"]
+position = Vector3(0, 0.04, 0)
+mesh = SubResource("BoxMesh_plot")
+
+[node name="Scenery" type="Node3D" parent="."]
+
+[node name="Cottage" parent="Scenery" instance=ExtResource("5_cottage")]
+position = Vector3(-1.6, 0, -4.2)
+
+[node name="Oven" parent="Scenery" instance=ExtResource("6_oven")]
+position = Vector3(2.3, 0, -3.8)
+
+[node name="Barrel" parent="Scenery" instance=ExtResource("7_barrel")]
+position = Vector3(-2.9, 0, -3)
+
+[node name="Tree_1" parent="Scenery" instance=ExtResource("2_tree3")]
+position = Vector3(-2.5, 0, -0.8)
+
+[node name="Tree_2" parent="Scenery" instance=ExtResource("3_tree5")]
+position = Vector3(2.5, 0, -0.8)
+
+[node name="Tree_3" parent="Scenery" instance=ExtResource("3_tree5")]
+position = Vector3(-2.7, 0, 2.6)
+
+[node name="Tree_4" parent="Scenery" instance=ExtResource("2_tree3")]
+position = Vector3(2.7, 0, 2.6)
+
+[node name="Bush_1" parent="Scenery" instance=ExtResource("4_bush")]
+position = Vector3(-2.6, 0, 0.9)
+
+[node name="Bush_2" parent="Scenery" instance=ExtResource("4_bush")]
+position = Vector3(2.6, 0, 0.9)
+
+[node name="Actors" type="Node3D" parent="."]
+
+[node name="Player" parent="Actors" instance=ExtResource("8_wight")]
+position = Vector3(0, 0, 2.3)
+
+[node name="Spirit" parent="Actors" instance=ExtResource("9_spirit")]
+position = Vector3(1.15, 0, 2.45)

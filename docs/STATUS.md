@@ -4,15 +4,14 @@
 
 **Implemented:**
 - `art/PIPELINE.md` — direction, conventions, CC0 sources, generator buildings, size ratios (4b), budgets, sessions S0–S9.
-- S0/S1: packs outside Git; Godot 4.6 project `game/` with `garden.tscn`.
+- S0/S1: packs outside Git; Godot 4.6 project `game/`.
 - S2: `intake.py` + manifest + `art/ASSETS.md`.
-- S8/S8b/S9/S9b: `bldg_cottage` (7,128 tris) and `bldg_oven` (3,692 tris) via Intake in `game/assets/buildings/`.
 - S3: `lineup.py`; **player = Garden Wight (A)**, 0.90 m.
-- S5: shared `creature_base.py`; **forest spirit** 0.65 m, 4,648 tris.
-- S4a: **trees `tree_common_3` (3,505) and `tree_common_5` (3,182), bush `bush_common_flowers` (1,368)** in `game/assets/nature/`. Leaves brightened via `material_map` (light sage). Twisted trees (9.1k–10.1k) and common 1/2/4 (>4,000 or darker) removed; `tree_common_1` deleted.
+- S5: `creature_base.py`; **forest spirit** 0.65 m, 4,648 tris.
+- S4a: trees `tree_common_3`/`_5`, bush `bush_common_flowers`; leaves brightened via `material_map`; cottage and oven in `game/assets/buildings/`.
+- **S4b:** `game/scenes/garden.tscn` (16×16 ground, 3×3 beet, cottage/oven/barrel, 4 trees, 2 bushes, player + spirit); camera ortho, width 6 m, 50° down; `crop_growth.gd` (pure logic) + `crop_plot.gd`; `tests/test_crop_growth.gd`; `tools/capture.gd`; post-import `scripts/import/shared_materials.gd` splits bark/leaf meshes so leaf cards cast no shadow (trunks do), crops/props/bushes cast none.
 
-**Checks:** S4a Intake exit 0, `--verify` 14/14 PASS; lineup `--set trees` exit 0 (`docs/previews/lineup_trees_1x.png`, `_3x.png`); Godot `--import` exit 0, no ERROR, no extracted PNGs (`embedded_image_handling=2`).
+**Checks:** Godot `--import` exit 0, 0 ERROR; crop-growth tests 6/6 PASS; `--quit-after 120` 0 ERROR; capture 360×800, avg 60.0 FPS.
 **NOT RUN:** phone tests.
-
-**Findings:** leaf base texture is a dark green (sRGB ≈ 88,123,0) plus leaf-card self-shadowing; the Intake override replaces its RGB with a white+alpha texture, so the palette colour shows unmultiplied.
-**Next step:** S4b garden scene (camera width, paths, bed, buildings).
+**Open decisions:** paid editions.
+**Next step:** S6 animations; then phone acceptance.
