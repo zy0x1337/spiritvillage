@@ -225,9 +225,11 @@ Offene visuelle Befunde:
 
 Rundes Häuschen nach `PIPELINE.md` 4a: cremeweiße Putzwand (leicht
 ausgestellter Fuß) auf einem Steinsockel, überstehendes Kuppeldach aus sieben
-Terrakotta-Schindelringen mit abgerundeten Ziegelzungen, Rundbogentür aus fünf
-Planken mit Eisenring, Holzrahmen, Rundfenster mit Sprossenkreuz, Wandlaterne
-am Eisenarm, zwei Steinstufen. Ca. 7 100 Dreiecke (Budget 8 000), 12
+Terrakotta-Schindelringen mit flachen, abgerundeten Ziegelzungen (je Ziegel
+einer von drei Terrakottatönen), Rundbogentür aus fünf Planken mit Eisenring,
+Holzrahmen, Rundfenster mit Sprossenkreuz, Wandlaterne am Eisenarm, zwei
+Steinstufen aus nach oben verjüngten Feldsteinen. Wand 2,1 m hoch, Ø 2,4 m;
+Dach Ø 2,8 m, 0,85 m hoch; Tür 1,3 m. Ca. 7 100 Dreiecke (Budget 8 000), 13
 Materialien, keine Texturen.
 
 **Konventionen** (zusätzlich zu PIPELINE.md Abschnitt 2):
@@ -249,6 +251,13 @@ Materialien, keine Texturen.
 - Das Dach ist auf die 50°-Spielkamera abgestimmt: Die Traufe muss höher
   hängen als etwa Überstand × tan 50° über dem Türrahmen, sonst verdeckt sie
   die Türoberkante (erster Lauf: 0,3 m Überstand, Tür halb verdeckt).
+- Aus 50° wirkt die Dachfläche etwa `Dach-Ø × sin 50° + Dachhöhe × cos 50°`
+  hoch, die sichtbare Wand nur `Wandhöhe × cos 50°`. Mehr Wand im Bild gibt es
+  deshalb nur über eine höhere Wand und einen kleineren Dachdurchmesser, nicht
+  über ein flacheres Dach.
+- Die glatte Dachkappe (Spitze und drei Stützringe, zuerst erzeugt) bekommt
+  die exakten Kuppelnormalen als eigene Normalen; interpolierte
+  Fächer-Normalen zeigten radiale Streifen.
 
 **Aufruf:**
 
@@ -272,16 +281,25 @@ Kameras/Lichter, `Door` bei glTF +Z). Die reinen Geometriefunktionen
 (`derive_dimensions`, `roof_rows`, `step_stones`, `inspect_glb`) laufen ohne
 Blender.
 
-**Stand** (Blender 5.2.1 LTS, Nutzer-PC, `--views`): Exit 0; 7 128 Dreiecke
-(GLB identisch), Höhe 2,77 m, tiefster Punkt 0,0000, 0 von 15 Paaren
-durchdringen sich, Door-Node glTF (−0,43; 0,19; 1,31). Bei 1× ist das Häuschen
-175 px hoch, der Gartenwicht 32 px. Alle Bilder angesehen, Kopien unter
-`docs/previews/bldg_cottage*.png`. Ausstehend (NOT RUN): Godot-Import,
-Handy-Ansicht.
+**Stand** nach Nacharbeit S8b (Blender 5.2.1 LTS, Nutzer-PC, `--views`):
+Exit 0; 7 128 Dreiecke (GLB identisch), Höhe 2,96 m, tiefster Punkt 0,0000,
+0 von 15 Paaren durchdringen sich, Door-Node glTF (−0,43; 0,19; 1,20). Bei 1×
+ist das Häuschen 177 px hoch, der Gartenwicht 32 px. Alle fünf Bilder
+angesehen, Kopien unter `docs/previews/bldg_cottage*.png`. Ausstehend
+(NOT RUN): Godot-Import, Handy-Ansicht.
+
+Behoben in S8b: Dach dominierte die Silhouette (Wand jetzt 2,1 statt 1,8 m,
+Dach-Ø 2,8 statt 3,0 m, Dachhöhe 0,85 statt 1,0 m); Schindeln wirkten wie
+dünne Blütenblätter (flachere Zungen, dickere Lippe und Traufe, dunkleres
+Terrakotta mit Farbstreuung je Ziegel); radiale Streifen in der Kappe;
+gleichförmige Stufen.
 
 Offene visuelle Befunde:
 
-1. Aus 50° nimmt das Dach gut die Hälfte der Gebäudefläche ein; das folgt aus
-   der Kamera, ist aber stärker als in der Referenz.
-2. Schwache radiale Schattierungslinien in der glatten Dachkappe.
-3. Die Stufensteine wirken noch recht regelmäßig und blockhaft.
+1. Aus 50° ist das Dach noch die größte Fläche; weniger geht nur mit
+   flacherer Spielkamera (Entscheidung zur Kamera, nicht zum Modell).
+2. Die glatte Kappe liegt als kleiner flacher „Knopf“ auf dem obersten
+   Schindelring; in Seiten- und Rückansicht sichtbar, aus der Spielkamera
+   unauffällig.
+3. Große glatte Wandflächen an Seite und Rückseite; die Referenz belebt sie
+   mit Ranken und Pflanzen (Szenendekoration in S4, nicht im Generator).

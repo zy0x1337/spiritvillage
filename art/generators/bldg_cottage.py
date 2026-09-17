@@ -69,8 +69,8 @@ except ImportError:  # pragma: no cover - outside Blender
 
 CONFIG = {
     # Walls: round plaster drum, slightly flared at the foot.
-    "wall_diameter": 2.6,          # at the top of the wall
-    "wall_height": 1.8,            # ground to where the roof sits on the wall
+    "wall_diameter": 2.4,          # at the top of the wall
+    "wall_height": 2.1,            # ground to where the roof sits on the wall
     "wall_base_flare": 0.05,       # extra diameter (fraction) at ground level
     "wall_segments": 64,
     "wall_rows": 4,
@@ -83,23 +83,23 @@ CONFIG = {
     # Roof: overhanging dome of shingle rings with rounded tile tongues.
     # The 50 degree game camera looks over the eave: the door crown stays visible
     # only while the eave hangs higher than about overhang * tan(50 deg) above it.
-    "roof_eave_diameter": 3.0,     # dome base, without the shingle lip
+    "roof_eave_diameter": 2.8,     # dome base, without the shingle lip
     "roof_eave_drop": 0.03,        # dome base sits this far below the wall top
     "roof_eave_slope_deg": 22.0,   # dome parameter at the eave: 0 = vertical skirt, higher = flatter eave
-    "roof_height": 1.0,            # dome base to apex
+    "roof_height": 0.85,           # dome base to apex
     "roof_shape_exponent": 2.0,    # superellipse: 2 = ellipse, higher = fuller shoulder
     "roof_rings": 7,
     "roof_cap_fraction": 0.1,      # share of the profile length kept as a smooth top cap
-    "roof_lip": 0.07,              # each ring's lower edge stands out this far (at a tile centre)
-    "roof_tile_bulge": 0.7,        # share of the lip lost towards the joints -> visible single tiles
+    "roof_lip": 0.09,              # each ring's lower edge stands out this far (at a tile centre)
+    "roof_tile_bulge": 0.35,        # share of the lip lost towards the joints -> visible single tiles
     "roof_tuck": 0.04,             # the next ring starts this far up under the lip
-    "roof_tile_width": 0.38,       # target tile width along a ring's lower edge
-    "roof_scallop": 0.05,          # tile tongues hang this far below the joints
-    "roof_eave_thickness": 0.06,
+    "roof_tile_width": 0.32,       # target tile width along a ring's lower edge
+    "roof_scallop": 0.025,         # tile tongues hang this far below the joints
+    "roof_eave_thickness": 0.1,
     "roof_segments": 96,
     # Arched plank door towards the front.
     "door_width": 0.8,             # visible leaf width
-    "door_height": 1.15,           # visible sill to arch crown
+    "door_height": 1.3,            # visible sill to arch crown
     "door_arch_rise": 0.4,         # = door_width / 2 -> round arch
     "door_planks": 5,
     "door_plank_gap": 0.016,
@@ -108,7 +108,7 @@ CONFIG = {
     "door_backing_recess": 0.012,  # dark backing between the planks sits this far behind them
     "door_ring_diameter": 0.13,
     "door_ring_tube": 0.02,
-    "door_ring_height": 0.58,      # stud above the sill
+    "door_ring_height": 0.64,      # stud above the sill
     "door_ring_offset": 0.2,       # from the door centre towards the latch side (+X)
     "door_sill_gap": 0.006,        # air between upper step and door/frame
     # Wooden frame around the door opening.
@@ -118,7 +118,7 @@ CONFIG = {
     "frame_arch_samples": 18,
     # Round window with a cross (viewer's left).
     "window_azimuth_deg": -42.0,
-    "window_center_height": 0.92,
+    "window_center_height": 1.08,
     "window_opening_diameter": 0.38,  # visible glass
     "window_frame_width": 0.075,
     "window_frame_proud": 0.07,
@@ -128,7 +128,7 @@ CONFIG = {
     "window_samples": 32,
     # Wall lantern on an iron bracket (viewer's right).
     "lantern_azimuth_deg": 38.0,
-    "lantern_mount_height": 1.3,
+    "lantern_mount_height": 1.55,
     "lantern_arm_length": 0.27,
     "lantern_arm_thickness": 0.03,
     "lantern_glass": (0.12, 0.12, 0.15),   # x, y, z
@@ -138,14 +138,16 @@ CONFIG = {
     "step_rise": 0.09,
     "step_depth": 0.3,
     "step_widths": (1.3, 1.05),
-    "step_stone_splits": ((0.3, 0.38, 0.32), (0.55, 0.45)),  # fractions of the step width
+    "step_stone_splits": ((0.24, 0.41, 0.35), (0.58, 0.42)),  # fractions of the step width
     "step_gap": 0.015,
     "step_bury": 0.16,             # upper step reaches this far into the wall
     "step_tuck": 0.06,             # lower steps reach this far under the step above
-    "step_bevel": 0.03,
-    "step_height_jitter": 0.02,    # stones only sink, never rise towards the door
-    "step_front_jitter": 0.03,
-    "step_yaw_jitter_deg": 7.0,
+    "step_bevel": 0.04,
+    "step_height_jitter": 0.035,   # stones only sink, never rise towards the door
+    "step_front_jitter": 0.06,
+    "step_yaw_jitter_deg": 10.0,
+    "step_top_taper": (0.80, 0.92),  # top face shrinks to this share of the foot -> rounded field stones
+    "step_top_wobble": 0.018,      # top corners sink by up to this much
     # Mesh budget and shading.
     "triangle_budget": 8000,       # art/PIPELINE.md section 7
     "smooth_angle_deg": 45.0,      # edges sharper than this stay crisp
@@ -174,8 +176,9 @@ CONFIG = {
     # albedo_color; converted to linear for Blender and the GLB.
     "colors": {
         "plaster_cream": (0.93, 0.88, 0.78, 1.0),
-        "roof_terracotta": (0.68, 0.33, 0.22, 1.0),
-        "roof_terracotta_alt": (0.74, 0.39, 0.26, 1.0),
+        "roof_terracotta": (0.63, 0.31, 0.21, 1.0),
+        "roof_terracotta_alt": (0.67, 0.34, 0.23, 1.0),
+        "roof_terracotta_dark": (0.59, 0.28, 0.19, 1.0),
         "roof_underside": (0.36, 0.17, 0.11, 1.0),
         "wood_door": (0.56, 0.37, 0.22, 1.0),
         "wood_dark": (0.24, 0.15, 0.09, 1.0),
@@ -209,7 +212,8 @@ SEPARATE_PARTS = (
 )
 
 # Roof material slots.
-ROOF_MAT_A, ROOF_MAT_B, ROOF_MAT_UNDER = 0, 1, 2
+ROOF_MAT_A, ROOF_MAT_B, ROOF_MAT_UNDER, ROOF_MAT_DARK = 0, 1, 2, 3
+ROOF_TILE_MATERIALS = (ROOF_MAT_A, ROOF_MAT_B, ROOF_MAT_DARK)
 
 
 # ---------------------------------------------------------------------------
@@ -380,8 +384,9 @@ def step_stones(config: dict, dims: dict) -> list:
 def roof_rows(config: dict, dims: dict) -> list:
     """Roof as rows of points from apex to the hidden underside centre.
 
-    Returns ``(material_index, points)`` per row; the material belongs to the
-    band between the previous row and this one. Rows are single points (apex,
+    Returns ``(material, points)`` per row; the material belongs to the band
+    between the previous row and this one - one index, or one per segment
+    (tile rows: each tile gets one of ``ROOF_TILE_MATERIALS``). Rows are single points (apex,
     underside centre) or rings of ``roof_segments`` points.
     """
     segments = config["roof_segments"]
@@ -420,7 +425,11 @@ def roof_rows(config: dict, dims: dict) -> list:
         r_bottom = roof_profile_at(table, s_bottom)[0]
         tiles = max(5, round(2.0 * math.pi * r_bottom / config["roof_tile_width"]))
         phase = 0.5 * math.pi * (k % 2)
-        material = ROOF_MAT_A if k % 2 == 0 else ROOF_MAT_B
+        material = []
+        for j in range(segments):
+            phi_mid = 2.0 * math.pi * (j + 0.5) / segments
+            tile = math.floor((tiles * phi_mid / 2.0 + phase) / math.pi) % tiles
+            material.append(ROOF_TILE_MATERIALS[int(_hash01(k, tile, 5.0) * len(ROOF_TILE_MATERIALS))])
         if k > 0:  # back up under the previous ring's lip
             rows.append((ROOF_MAT_UNDER, ring(s_top - config["roof_tuck"], 0.0, 0.0)))
         rows.append((material, ring(s_bottom, 1.0, 1.0, tiles, phase)))
@@ -552,7 +561,8 @@ def _materials(config: dict, keys) -> list:
     colors = config["colors"]
     names = {
         "plaster_cream": "Mat_PlasterCream", "roof_terracotta": "Mat_RoofTerracotta",
-        "roof_terracotta_alt": "Mat_RoofTerracottaAlt", "roof_underside": "Mat_RoofUnderside",
+        "roof_terracotta_alt": "Mat_RoofTerracottaAlt", "roof_terracotta_dark": "Mat_RoofTerracottaDark",
+        "roof_underside": "Mat_RoofUnderside",
         "wood_door": "Mat_WoodDoor", "wood_dark": "Mat_WoodDark", "wood_frame": "Mat_WoodFrame",
         "iron": "Mat_Iron", "window_glass": "Mat_WindowGlass", "lantern_glow": "Mat_LanternGlow",
         "stone": "Mat_Stone", "stone_base": "Mat_StoneBase", "preview_ground": "Mat_PreviewGround",
@@ -609,8 +619,8 @@ def _bridge_rows(bm, rows, materials, loop: bool = False) -> None:
         else:
             faces = [bm.faces.new((a[j], a[(j + 1) % len(a)], b[(j + 1) % len(b)], b[j]))
                      for j in range(len(a))]
-        for face in faces:
-            face.material_index = material
+        for j, face in enumerate(faces):
+            face.material_index = material[j] if isinstance(material, list) else material
 
 
 def _ring(radius: float, z: float, segments: int) -> list:
@@ -745,9 +755,25 @@ def build_roof(config: dict, dims: dict):
     rows = roof_rows(config, dims)
     vert_rows = [[bm.verts.new(p) for p in points] for _, points in rows]
     _bridge_rows(bm, vert_rows, [material for material, _ in rows])
-    materials = _materials(config, ["roof_terracotta", "roof_terracotta_alt", "roof_underside"])
-    return _object_from_bmesh("Roof", bm, materials, origin=(0.0, 0.0, config["wall_height"]),
-                              sharp_angle_deg=config["smooth_angle_deg"])
+    materials = _materials(config, ["roof_terracotta", "roof_terracotta_alt", "roof_underside",
+                                    "roof_terracotta_dark"])
+    obj = _object_from_bmesh("Roof", bm, materials, origin=(0.0, 0.0, config["wall_height"]),
+                             sharp_angle_deg=config["smooth_angle_deg"])
+    # The smooth top cap (apex + support rings, created first) gets the exact
+    # dome normals; interpolated fan normals showed as radial streaks.
+    table = dims["roof_profile"]
+    s_cap = table[-1][0] * config["roof_cap_fraction"]
+    normals = [(0.0, 0.0, 0.0)] * len(obj.data.vertices)
+    index = 0
+    for (_material, ring_points), share in zip(rows[:4], (0.0, 0.5, 0.9, 1.0)):
+        _, _, tr, tz = roof_profile_at(table, s_cap * share)
+        nr, nz = -tz, tr
+        for x, y, _z in ring_points:
+            r = math.hypot(x, y)
+            normals[index] = (0.0, 0.0, 1.0) if r < 1e-9 else (nr * x / r, nr * y / r, nz)
+            index += 1
+    obj.data.normals_split_custom_set_from_vertices(normals)
+    return obj
 
 
 def build_door(config: dict, dims: dict):
@@ -927,9 +953,16 @@ def build_lantern(config: dict, dims: dict) -> list:
 
 def build_steps(config: dict, dims: dict):
     bm = bmesh.new()
-    for stone in dims["steps"]:
+    lo, hi = config["step_top_taper"]
+    for i, stone in enumerate(dims["steps"]):
         verts = bmesh.ops.create_cube(bm, size=1.0)["verts"]
         bmesh.ops.scale(bm, vec=Vector(stone["extents"]), verts=verts)
+        taper = lo + (hi - lo) * _hash01(i, 7.0)
+        for corner, vert in enumerate(verts):
+            if vert.co.z > 0.0:
+                vert.co.x *= taper
+                vert.co.y *= taper
+                vert.co.z -= config["step_top_wobble"] * _hash01(i, corner, 8.0)
         bmesh.ops.rotate(bm, cent=Vector((0.0, 0.0, 0.0)), matrix=Matrix.Rotation(stone["yaw"], 3, 'Z'), verts=verts)
         bmesh.ops.translate(bm, vec=Vector(stone["center"]), verts=verts)
     bmesh.ops.bevel(

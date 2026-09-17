@@ -217,7 +217,7 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
 | S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |
 | S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | offen |
-| S8b | Häuschen-Nacharbeit: Dach und Stufen | Claude · medium | S8 | offen |
+| S8b | Häuschen-Nacharbeit: Dach und Stufen | Claude · medium | S8 | ✅ |
 
 ### S0 – Pakete ablegen (Nutzer) ✅
 
