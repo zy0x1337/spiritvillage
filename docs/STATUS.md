@@ -13,5 +13,7 @@
 
 **Checks:** Godot `--import` exit 0, 0 ERROR; crop-growth tests 6/6 PASS; `--quit-after 120` 0 ERROR; capture 360×800, avg 60.0 FPS.
 **NOT RUN:** phone tests.
+
+**Findings (Claude review of `garden_scene.png`):** empty background band above the 16 m ground; cottage roof clipped at the frame edge; long hard shadows across the beet; ground bare (no path, grass, flowers, stones); crops off-centre on some plots; barrel not visible. → session S4c.
 **Open decisions:** paid editions.
-**Next step:** S6 animations; then phone acceptance.
+**Next step:** S4c scene polish and S7 icons (parallel); then S6 animations, phone acceptance.

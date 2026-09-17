@@ -253,9 +253,10 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
 | S3 | Lineup und Player-Entscheidung | Claude · high | S2 | ✅ |
 | S4a | Szenen-Assets: Baumauswahl, Gebäude-Intake, Textur-Import | DeepSeek · medium, Sichtprüfung Claude · low | S2, S3, S8b, S9 | offen |
-| S4b | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S4a, S9b | offen |
+| S4b | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S4a, S9b | ✅ `83dc8cc` |
+| S4c | Szenen-Feinschliff: Kadrierung, Licht, Bewuchs, Weg | DeepSeek · medium, Sichtprüfung Claude · medium | S4b | offen |
 | S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | ✅ |
-| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4b, S5 | offen |
+| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4c, S5 | offen |
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
 | S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |
 | S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | ✅ `f98c4f7`, Nacharbeit S9b |
@@ -339,6 +340,21 @@ S4a: Baumauswahl per Lineup, Häuschen und Ofen per Intake nach `game/assets/bui
 - **Abnahme:** Headless-Start ohne Fehler; Screenshot im Hochformat
   (`docs/previews/garden_scene.png`); FPS-Messung auf dem PC als Richtwert.
   Sichtprüfung durch Claude.
+
+### S4c – Szenen-Feinschliff (DeepSeek · medium)
+
+Sichtprüfung von `docs/previews/garden_scene.png` (Claude) gegen `mockup.png`:
+
+1. Oben im Bild steht ein leerer cremefarbener Streifen – der 16-m-Boden endet
+   im Bild. Boden vergrößern (ca. 40 × 40 m), Hintergrundfarbe warm halten.
+2. Häuschen und Ofen stehen am Bildrand, das Dach ist oben angeschnitten.
+   Beides vollständig ins Bild, mit Rand.
+3. Die Schatten sind sehr lang und hart und legen Balken über das Beet.
+   Sonne steiler stellen, weiche Schattenkante.
+4. Der Boden ist leer: kein Weg, kein Gras, keine Blumen, keine Steine.
+   Dressing über den Intake nachziehen (Stylized Nature MegaKit: Gras, Blumen,
+   Klee, Pilze, Kiesel, Steinplatten für den Weg).
+5. Pflanzen sitzen teils außermittig auf den Beetfeldern; Fass nicht sichtbar.
 
 ### S5 – Wesen-Grundkörper und Waldwesen (Claude · high)
 
