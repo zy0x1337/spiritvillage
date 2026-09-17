@@ -18,8 +18,8 @@ Conventions
   (``FRONT_SIGN``). ``.L``/``.R`` follow Blender's mirror convention: the
   character's left side is +X.
 * **Every size in CONFIG is a full extent** (diameter / length / width /
-  height), never a radius. Primitives are created at unit size and
-  scaled to those extents, so ``body_width`` really is the widest
+  height), never a radius. Parts are built with bmesh at unit size and
+  scaled to those extents (baked into the mesh), so ``body_width`` really is the widest
   diameter of the finished body.
 
 IMPORTANT - environment assumption
@@ -85,8 +85,9 @@ CONFIG = {
     "foot_forward": 0.10,         # shift towards the face side; toes peek out under the belly
     # Hands (short rounded stubs, no fingers).
     "hand_length": 0.17,
-    "hand_diameter": 0.14,
-    "hand_height_ratio": 0.45,
+    "hand_diameter": 0.12,
+    "hand_height_ratio": 0.46,
+    "hand_forward": 0.03,         # towards the face side, so the stubs don't read as ears from above
     "hand_embed": 0.35,           # fraction of hand_diameter pushed into the body
     "hand_angle_deg": 22.0,       # outward splay of the stubs' lower ends
     # Eyes.
@@ -94,6 +95,7 @@ CONFIG = {
     "eye_spacing": 0.16,          # centre-to-centre distance
     "eye_height_ratio": 0.68,     # kept clear below the cap's brim
     "eye_protrusion": 0.35,       # fraction of eye_diameter standing out of the body
+    "eye_shine_diameter": 0.024,  # small white catch-light; 0 disables it
     # Cap (asymmetric, folded tip). Rotates about its own base.
     "cap_base_diameter": 0.46,
     "cap_height": 0.30,
@@ -101,10 +103,16 @@ CONFIG = {
     "cap_lean_deg": 10.0,         # sideways lean (about Y) -> asymmetry, tip towards +X
     "cap_bend_deg": 95.0,         # total droop of the upper tip, towards the lean side
     "cap_bend_start": 0.45,       # fraction of cap_height where the droop begins
+    "cap_brim_width": 0.03,       # brim reaches this far past cap_base_diameter / 2
+    "cap_brim_droop": 0.06,       # brim edge hangs this far below the cap base at the back/sides
+    "cap_brim_front_lift": 0.8,   # fraction of the droop removed at the front (keeps the eyes clear)
+    "cap_brim_thickness": 0.02,
     # Seed bag + strap.
     "bag_size": (0.15, 0.10, 0.17),   # full x, y, z extents
-    "bag_height_ratio": 0.24,
+    "bag_height_ratio": 0.20,
     "bag_embed": 0.35,            # fraction of bag x-extent overlapping the flank
+    "bag_flap_depth_ratio": 0.45, # how far the flap hangs down the bag front (fraction of bag height)
+    "bag_flap_thickness": 0.016,
     # The strap is a loop on the bag side: up the front flank beside the face,
     # over the shoulder, down the back, both ends buried in the bag's top.
     # Angles are measured around the body from the front (0) towards the bag
@@ -115,23 +123,34 @@ CONFIG = {
     "strap_thickness": 0.018,     # band thickness
     "strap_lift": 0.006,          # gap between body surface and the band's inner side
     "strap_mid_ratio": 0.62,      # lower waypoint height (fraction of body_height)
-    "strap_mid_angle_deg": 48.0,  # keeps the front run clear of the eyes and the hand
+    "strap_mid_angle_deg": 44.0,  # keeps the front run clear of the eyes and the hand
     "strap_upper_ratio": 0.72,
     "strap_upper_angle_deg": 64.0,
     "strap_shoulder_ratio": 0.82,  # crest over the shoulder, at 90 deg (the bag side)
     "strap_bag_inset": 0.25,      # anchor inset from the bag's front/back face, fraction of bag depth
     "strap_bury": 0.03,           # how far each end reaches down into the bag
+    # Mesh detail (the GLB is a mobile asset; ~8k triangles in total).
+    "body_segments": (48, 28),    # around, top-to-bottom
+    "part_segments": (24, 12),    # feet, hands, eyes
+    "cap_segments": (40, 20),     # around, along the spine
+    "strap_samples_per_span": 16,
+    "bag_bevel": 0.015,           # rounded bag edges, baked into the mesh
+    "smooth_angle_deg": 50.0,     # edges sharper than this stay crisp (bag, strap, cap brim)
     # Preview only (never exported to GLB).
     "preview_pitch_deg": 50.0,    # camera tilt below the horizon
     "preview_distance": 3.0,      # orthographic: affects clipping/placement, not scale
     "preview_margin": 1.25,       # empty border around the figure
     "preview_resolution": (768, 1024),
+    "views_samples": 32,          # Cycles samples for the --views check renders
+    "views_side_pitch_deg": 20.0,
+    "views_figure_heights": (96, 48),  # crops where the FIGURE (not the image) has this height
     # Colors (matte, texture-free).
     "colors": {
         "skin_cream": (0.93, 0.87, 0.74, 1.0),
         "cap_moss": (0.29, 0.42, 0.24, 1.0),
         "feet_brown": (0.24, 0.16, 0.10, 1.0),
         "eyes_dark": (0.05, 0.05, 0.06, 1.0),
+        "eye_shine": (0.95, 0.95, 0.92, 1.0),
         "bag_ochre": (0.72, 0.51, 0.20, 1.0),
         "strap_ochre_dark": (0.55, 0.38, 0.15, 1.0),
         "preview_ground": (0.55, 0.50, 0.42, 1.0),
@@ -139,6 +158,17 @@ CONFIG = {
 }
 
 COLLECTION_NAME = "GardenWight_Character"
+
+# Parts that must never interpenetrate (checked on every run). Everything
+# may touch the body, the eye shines sit in the eyes and the strap ends
+# are buried in bag and flap on purpose.
+SEPARATE_PARTS = (
+    ("Hand.L", "Bag"), ("Hand.R", "Bag"), ("Hand.L", "BagFlap"), ("Hand.R", "BagFlap"),
+    ("Hand.L", "Strap"), ("Hand.R", "Strap"),
+    ("Strap", "Eye.L"), ("Strap", "Eye.R"), ("Strap", "Cap"),
+    ("Cap", "Eye.L"), ("Cap", "Eye.R"), ("Cap", "Hand.L"), ("Cap", "Hand.R"),
+    ("Foot.L", "Bag"), ("Foot.R", "Bag"),
+)
 PREVIEW_COLLECTION_NAME = "GardenWight_PreviewSetup"
 BLENDER_API_TARGET = "5.2.1 LTS (verified); older versions untested"
 
@@ -234,7 +264,9 @@ def derive_dimensions(config: dict) -> dict:
     hand_z = _height_at(config, config["hand_height_ratio"])
     hand_r = body_radius_at(hand_z, config)
     dims["hand_z"] = hand_z
-    dims["hand_x"] = hand_r + config["hand_diameter"] * (0.5 - config["hand_embed"])
+    hand_ring = hand_r + config["hand_diameter"] * (0.5 - config["hand_embed"])
+    dims["hand_y"] = FRONT_SIGN * config["hand_forward"]
+    dims["hand_x"] = math.sqrt(max(hand_ring ** 2 - config["hand_forward"] ** 2, 0.0))
     dims["body_radius_at_hands"] = hand_r
 
     # Eyes: on the body's surface of revolution at their height, then
@@ -414,9 +446,20 @@ def _link_only(obj, collection) -> None:
     collection.objects.link(obj)
 
 
-def _shade_smooth(mesh) -> None:
-    for poly in mesh.polygons:
-        poly.use_smooth = True
+def _shade_smooth(mesh, sharp_angle_deg=None) -> None:
+    """Smooth-shade every face; optionally keep edges above an angle sharp."""
+    mesh.shade_smooth()
+    if sharp_angle_deg is not None:
+        mesh.set_sharp_from_angle(angle=math.radians(sharp_angle_deg))
+
+
+def _object_from_bmesh(name: str, bm, mesh_name=None):
+    """Write ``bm`` into a new mesh + object via bpy.data (no operators)."""
+    mesh = bpy.data.meshes.new(mesh_name or name)
+    bm.to_mesh(mesh)
+    bm.free()
+    mesh.update()
+    return bpy.data.objects.new(name, mesh)
 
 
 def get_or_create_material(name: str, rgba):
@@ -456,28 +499,34 @@ def clear_scene() -> None:
         bpy.data.lights.remove(light)
 
 
-def _add_unit_sphere(name: str, extents, location, rotation=(0.0, 0.0, 0.0)):
-    """Unit-diameter UV sphere scaled to full ``extents`` (x, y, z)."""
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=SPHERE_RADIUS, segments=16, ring_count=10)
-    obj = bpy.context.active_object
-    obj.name = name
-    obj.data.name = name
-    obj.scale = extents
+def _add_sphere(name: str, extents, location, segments, rotation=(0.0, 0.0, 0.0)):
+    """UV sphere with full ``extents`` (x, y, z) baked into the mesh.
+
+    Built with bmesh instead of ``bpy.ops.mesh.primitive_uv_sphere_add``:
+    no context/poll dependency, and the GLB nodes carry no non-uniform
+    scale (cleaner normals and physics in Godot).
+    """
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=segments[0], v_segments=segments[1], radius=SPHERE_RADIUS)
+    bmesh.ops.scale(bm, vec=Vector(extents), verts=bm.verts)
+    obj = _object_from_bmesh(name, bm)
     obj.location = location
     obj.rotation_euler = rotation
     _shade_smooth(obj.data)
     return obj
 
 
-def _add_unit_box(name: str, extents, location, rotation=(0.0, 0.0, 0.0)):
-    """Unit-edge cube scaled to full ``extents`` (x, y, z)."""
-    bpy.ops.mesh.primitive_cube_add(size=1.0)
-    obj = bpy.context.active_object
-    obj.name = name
-    obj.data.name = name
-    obj.scale = extents
+def _add_rounded_box(name: str, extents, location, bevel: float):
+    """Box with full ``extents`` and bevelled edges, baked into the mesh."""
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    bmesh.ops.scale(bm, vec=Vector(extents), verts=bm.verts)
+    bmesh.ops.bevel(
+        bm, geom=list(bm.verts) + list(bm.edges), offset=bevel,
+        offset_type='OFFSET', segments=2, profile=0.5, affect='EDGES',
+    )
+    obj = _object_from_bmesh(name, bm)
     obj.location = location
-    obj.rotation_euler = rotation
     return obj
 
 
@@ -493,7 +542,8 @@ def build_body(config: dict, dims: dict):
     the visible cream overcoat surface (see art/README.md).
     """
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=28, v_segments=18, radius=SPHERE_RADIUS)
+    around, rings = config["body_segments"]
+    bmesh.ops.create_uvsphere(bm, u_segments=around, v_segments=rings, radius=SPHERE_RADIUS)
 
     xy_scale = body_xy_scale(config)
     height_scale = config["body_height"] / (2.0 * SPHERE_RADIUS)
@@ -504,13 +554,8 @@ def build_body(config: dict, dims: dict):
         vert.co.y *= radial
         vert.co.z *= height_scale
 
-    mesh = bpy.data.meshes.new("Body_Mesh")
-    bm.to_mesh(mesh)
-    bm.free()
-    _shade_smooth(mesh)
-    mesh.update()
-
-    obj = bpy.data.objects.new("Body", mesh)
+    obj = _object_from_bmesh("Body", bm)
+    _shade_smooth(obj.data)
     obj.location = (0.0, 0.0, dims["body_center_z"])
     obj.data.materials.append(get_or_create_material("Mat_SkinCream", config["colors"]["skin_cream"]))
     return obj
@@ -520,8 +565,9 @@ def build_feet(config: dict, dims: dict) -> list:
     material = get_or_create_material("Mat_FeetBrown", config["colors"]["feet_brown"])
     feet = []
     for side, sign in (("L", 1.0), ("R", -1.0)):
-        obj = _add_unit_sphere(
+        obj = _add_sphere(
             f"Foot.{side}",
+            segments=config["part_segments"],
             extents=(config["foot_width"], config["foot_length"], config["foot_height"]),
             location=(sign * dims["foot_x"], dims["foot_y"], dims["foot_center_z"]),
         )
@@ -534,10 +580,11 @@ def build_hands(config: dict, dims: dict) -> list:
     material = get_or_create_material("Mat_SkinCream", config["colors"]["skin_cream"])
     hands = []
     for side, sign in (("L", 1.0), ("R", -1.0)):
-        obj = _add_unit_sphere(
+        obj = _add_sphere(
             f"Hand.{side}",
+            segments=config["part_segments"],
             extents=(config["hand_diameter"], config["hand_diameter"], config["hand_length"]),
-            location=(sign * dims["hand_x"], 0.0, dims["hand_z"]),
+            location=(sign * dims["hand_x"], dims["hand_y"], dims["hand_z"]),
             # Relaxed, hanging pose: the lower ends splay outwards. (Tilting the
             # upper ends out read as ears from the elevated preview camera.)
             rotation=(0.0, -sign * math.radians(config["hand_angle_deg"]), 0.0),
@@ -552,13 +599,31 @@ def build_eyes(config: dict, dims: dict) -> list:
     diameter = config["eye_diameter"]
     eyes = []
     for side, sign in (("L", 1.0), ("R", -1.0)):
-        obj = _add_unit_sphere(
+        obj = _add_sphere(
             f"Eye.{side}",
+            segments=config["part_segments"],
             extents=(diameter, diameter, diameter),
             location=(sign * dims["eye_x"], dims["eye_y"], dims["eye_z"]),
         )
         obj.data.materials.append(material)
         eyes.append(obj)
+
+    shine = config["eye_shine_diameter"]
+    if shine > 0.0:
+        shine_material = get_or_create_material("Mat_EyeShine", config["colors"]["eye_shine"])
+        for side, sign in (("L", 1.0), ("R", -1.0)):
+            centre = Vector((sign * dims["eye_x"], dims["eye_y"], dims["eye_z"]))
+            outward = Vector((centre.x, centre.y, 0.0)).normalized()
+            # Same light direction on both eyes: up and towards the figure's right (-X).
+            direction = (outward + Vector((-0.45, 0.0, 0.9))).normalized()
+            obj = _add_sphere(
+                f"EyeShine.{side}",
+                extents=(shine, shine, shine),
+                location=centre + direction * (diameter / 2.0 - shine * 0.2),
+                segments=(12, 6),
+            )
+            obj.data.materials.append(shine_material)
+            eyes.append(obj)
     return eyes
 
 
@@ -574,7 +639,7 @@ def build_cap(config: dict, dims: dict):
     before bent the cone across its width and left a flat, floating sail,
     hence the explicit geometry (no modifier to apply on export).
     """
-    rings, segments = 14, 24
+    segments, rings = config["cap_segments"]
     height = config["cap_height"]
     base_radius = config["cap_base_diameter"] / 2.0
     bend = math.radians(config["cap_bend_deg"])
@@ -612,15 +677,37 @@ def build_cap(config: dict, dims: dict):
     last, tip = ring_verts[-2], ring_verts[-1][0]
     for j in range(segments):
         bm.faces.new((last[j], last[(j + 1) % segments], tip))
-    bm.faces.new(list(reversed(ring_verts[0])))  # closed brim underside
+    # Brim: from the cone base, flare out and down to a rounded lip, then
+    # back under towards the head. The droop is strongest at the back and
+    # sides; at the front most of it is lifted so the eyes stay clear.
+    width = config["cap_brim_width"]
+    droop = config["cap_brim_droop"]
+    thickness = config["cap_brim_thickness"]
+    lift = config["cap_brim_front_lift"]
+    brim_profile = (
+        (base_radius + width, -1.0, 0.0),                           # outer lip
+        (base_radius + width - thickness * 0.6, -1.0, thickness),   # under the lip
+        (base_radius * 0.85, 0.0, thickness * 0.5),                 # underside, inside the head
+    )
+    base_ring = ring_verts[0]
+    previous = base_ring
+    for radius, droop_share, rise in brim_profile:
+        ring = []
+        for j in range(segments):
+            phi = 2.0 * math.pi * j / segments
+            # side = +Y, so sin(phi) = -1 is the figure's front (-Y).
+            front = max(0.0, -math.sin(phi)) ** 1.5
+            drop = droop * (1.0 - lift * front) * -droop_share
+            ring.append(bm.verts.new((math.cos(phi) * radius, math.sin(phi) * radius, -drop + rise)))
+        for j in range(segments):
+            k = (j + 1) % segments
+            bm.faces.new((ring[j], ring[k], previous[k], previous[j]))
+        previous = ring
+    bm.faces.new(list(previous))  # closed underside
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
-    mesh = bpy.data.meshes.new("Cap")
-    bm.to_mesh(mesh)
-    bm.free()
-    _shade_smooth(mesh)
-
-    obj = bpy.data.objects.new("Cap", mesh)
+    obj = _object_from_bmesh("Cap", bm)
+    _shade_smooth(obj.data, config["smooth_angle_deg"])  # keeps the brim edge crisp
     obj.location = (0.0, 0.0, dims["cap_base_z"])
     obj.rotation_euler = (0.0, math.radians(config["cap_lean_deg"]), 0.0)
     obj.data.materials.append(get_or_create_material("Mat_CapMoss", config["colors"]["cap_moss"]))
@@ -635,7 +722,7 @@ def build_strap(config: dict, dims: dict):
     """
     thickness = config["strap_thickness"]
     taper_top = dims["bag_top_z"] + config["strap_taper_length"]
-    path = strap_path(config, dims)
+    path = strap_path(config, dims, config["strap_samples_per_span"])
 
     bm = bmesh.new()
     sections = []
@@ -664,24 +751,49 @@ def build_strap(config: dict, dims: dict):
     bm.faces.new(list(reversed(sections[-1])))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
 
-    mesh = bpy.data.meshes.new("Strap")
-    bm.to_mesh(mesh)
-    bm.free()
-    return bpy.data.objects.new("Strap", mesh)
+    obj = _object_from_bmesh("Strap", bm)
+    _shade_smooth(obj.data, config["smooth_angle_deg"])  # smooth along, crisp band edges
+    return obj
 
 
 def build_bag_and_strap(config: dict, dims: dict) -> tuple:
-    bag = _add_unit_box("Bag", extents=config["bag_size"], location=dims["bag_center"])
-    bevel = bag.modifiers.new("SoftEdges", type='BEVEL')
-    bevel.width = 0.015
-    bevel.segments = 2
+    bag = _add_rounded_box("Bag", config["bag_size"], dims["bag_center"], config["bag_bevel"])
+    _shade_smooth(bag.data, config["smooth_angle_deg"])
     bag.data.materials.append(get_or_create_material("Mat_BagOchre", config["colors"]["bag_ochre"]))
+
+    # Flap: a lid on top that folds over the upper front of the bag. The
+    # strap ends pass through it into the bag.
+    bag_x, bag_y, bag_z = dims["bag_center"]
+    size_x, size_y, size_z = config["bag_size"]
+    flap_t = config["bag_flap_thickness"]
+    flap_drop = size_z * config["bag_flap_depth_ratio"]
+    overhang = flap_t * 0.6
+    bm = bmesh.new()
+    for extents, centre in (
+        ((size_x + 2 * overhang, size_y + 2 * overhang, flap_t),
+         (0.0, 0.0, size_z / 2.0 + flap_t / 2.0 - overhang * 0.5)),
+        ((size_x + 2 * overhang, flap_t, flap_drop),
+         (0.0, FRONT_SIGN * (size_y / 2.0 + flap_t / 2.0 - overhang * 0.5), size_z / 2.0 - flap_drop / 2.0)),
+    ):
+        part = bmesh.ops.create_cube(bm, size=1.0)["verts"]
+        bmesh.ops.scale(bm, vec=Vector(extents), verts=part)
+        bmesh.ops.translate(bm, vec=Vector(centre), verts=part)
+    bmesh.ops.bevel(
+        bm, geom=list(bm.verts) + list(bm.edges), offset=flap_t * 0.35,
+        offset_type='OFFSET', segments=2, profile=0.5, affect='EDGES',
+    )
+    flap = _object_from_bmesh("BagFlap", bm)
+    flap.location = (bag_x, bag_y, bag_z)
+    _shade_smooth(flap.data, config["smooth_angle_deg"])
+    flap.data.materials.append(
+        get_or_create_material("Mat_StrapOchreDark", config["colors"]["strap_ochre_dark"])
+    )
 
     strap = build_strap(config, dims)
     strap.data.materials.append(
         get_or_create_material("Mat_StrapOchreDark", config["colors"]["strap_ochre_dark"])
     )
-    return bag, strap
+    return bag, flap, strap
 
 
 # ---------------------------------------------------------------------------
@@ -737,6 +849,33 @@ def report_bounding_height(collection, dims: dict, config: dict) -> None:
     )
 
 
+def report_part_intersections(collection) -> int:
+    """Print every ``SEPARATE_PARTS`` pair whose meshes intersect; return the count."""
+    from mathutils.bvhtree import BVHTree
+
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    trees = {}
+    for obj in collection.all_objects:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        verts = [evaluated.matrix_world @ v.co for v in mesh.vertices]
+        polys = [tuple(poly.vertices) for poly in mesh.polygons]
+        trees[obj.name] = BVHTree.FromPolygons(verts, polys)
+        evaluated.to_mesh_clear()
+
+    hits = 0
+    for a, b in SEPARATE_PARTS:
+        if a in trees and b in trees:
+            pairs = trees[a].overlap(trees[b])
+            if pairs:
+                hits += 1
+                print(f"[garden_wight] WARNING intersection: {a} x {b} ({len(pairs)} face pairs)")
+    print(f"[garden_wight] Part intersection check: {hits} of {len(SEPARATE_PARTS)} pairs intersect")
+    return hits
+
+
 # ---------------------------------------------------------------------------
 # Export / preview / render
 # ---------------------------------------------------------------------------
@@ -748,18 +887,18 @@ def export_glb(filepath: Path, collection) -> None:
     ground plane can leak into the file. The glTF exporter converts to
     Y-up: the -Y face ends up on glTF +Z.
     """
-    bpy.ops.object.select_all(action='DESELECT')
-    for obj in collection.all_objects:
-        obj.select_set(True)
-    mesh_objects = [obj for obj in collection.all_objects if obj.type == 'MESH']
-    if mesh_objects:
-        bpy.context.view_layer.objects.active = mesh_objects[0]
+    view_layer = bpy.context.view_layer
+    members = set(collection.all_objects)
+    for obj in view_layer.objects:
+        obj.select_set(obj in members)
 
+    # The exporter is an operator by nature; it needs no UI context in
+    # background mode, so no temp_override is required here.
     bpy.ops.export_scene.gltf(
         filepath=str(filepath),
         export_format='GLB',
         use_selection=True,
-        export_apply=True,       # bake modifiers (bag bevel)
+        export_apply=True,       # no modifiers are used; kept as a safety net
         export_materials='EXPORT',
         export_cameras=False,
         export_lights=False,
@@ -775,28 +914,23 @@ def build_preview_setup(config: dict, dims: dict):
     preview_coll = bpy.data.collections.new(PREVIEW_COLLECTION_NAME)
     bpy.context.scene.collection.children.link(preview_coll)
 
-    bpy.ops.mesh.primitive_plane_add(size=4.0, location=(0.0, 0.0, 0.0))
-    ground = bpy.context.active_object
-    ground.name = "Preview_Ground"
+    ground_mesh = bpy.data.meshes.new("Preview_Ground")
+    ground_mesh.from_pydata([(-2.0, -2.0, 0.0), (2.0, -2.0, 0.0), (2.0, 2.0, 0.0), (-2.0, 2.0, 0.0)], [], [(0, 1, 2, 3)])
+    ground = bpy.data.objects.new("Preview_Ground", ground_mesh)
     ground.data.materials.append(
         get_or_create_material("Mat_PreviewGround", config["colors"]["preview_ground"])
     )
     _link_only(ground, preview_coll)
 
-    bpy.ops.object.camera_add(location=dims["camera_location"])
-    camera = bpy.context.active_object
-    camera.name = "Preview_Camera"
+    camera = bpy.data.objects.new("Preview_Camera", bpy.data.cameras.new("Preview_Camera"))
+    camera.location = dims["camera_location"]
     camera.data.type = 'ORTHO'
     camera.data.ortho_scale = dims["camera_ortho_scale"]
     camera.rotation_euler = dims["camera_rotation"]
     _link_only(camera, preview_coll)
 
-    bpy.ops.object.light_add(
-        type='SUN',
-        location=(1.5, FRONT_SIGN * 1.5, dims["total_height"] + 1.5),
-    )
-    sun = bpy.context.active_object
-    sun.name = "Preview_Sun"
+    sun = bpy.data.objects.new("Preview_Sun", bpy.data.lights.new("Preview_Sun", type='SUN'))
+    sun.location = (1.5, FRONT_SIGN * 1.5, dims["total_height"] + 1.5)
     sun.data.energy = 2.5
     sun.data.angle = math.radians(20.0)  # wide angle -> soft shadow edges
     _link_only(sun, preview_coll)
@@ -823,6 +957,88 @@ def configure_render(scene, config: dict, output_path: Path) -> None:
     scene.render.resolution_y = res_y
     scene.render.image_settings.file_format = 'PNG'
     scene.render.filepath = str(output_path)
+
+
+def _figure_pixel_box(scene, camera, collection) -> tuple:
+    """Pixel box (x0, y0, x1, y1; origin bottom-left) of the figure in ``camera``."""
+    from bpy_extras.object_utils import world_to_camera_view
+
+    res_x, res_y = scene.render.resolution_x, scene.render.resolution_y
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    xs, ys = [], []
+    for obj in collection.all_objects:
+        if obj.type != 'MESH':
+            continue
+        evaluated = obj.evaluated_get(depsgraph)
+        for vert in evaluated.data.vertices:
+            co = world_to_camera_view(scene, camera, evaluated.matrix_world @ vert.co)
+            xs.append(co.x * res_x)
+            ys.append(co.y * res_y)
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def write_figure_height_crops(scene, camera, collection, config: dict, preview_png: Path) -> list:
+    """Crop the rendered preview to the figure and scale it so the *figure*
+    is exactly each of ``views_figure_heights`` pixels tall."""
+    import numpy as np
+
+    x0, y0, x1, y1 = _figure_pixel_box(scene, camera, collection)
+    figure_height = y1 - y0
+    print(f"[garden_wight] Figure height in preview: {figure_height:.0f} px of {scene.render.resolution_y} px image height")
+
+    source = bpy.data.images.load(str(preview_png))
+    width, height = source.size
+    pixels = np.empty(width * height * 4, dtype=np.float32)
+    source.pixels.foreach_get(pixels)
+    pixels = pixels.reshape(height, width, 4)
+    pad = 0.08 * figure_height
+    crop = pixels[
+        int(max(y0 - pad, 0)):int(min(y1 + pad, height)),
+        int(max(x0 - pad, 0)):int(min(x1 + pad, width)),
+    ]
+    bpy.data.images.remove(source)
+
+    written = []
+    for target in config["views_figure_heights"]:
+        scale = target / figure_height
+        image = bpy.data.images.new(f"fig{target}", crop.shape[1], crop.shape[0], alpha=True)
+        image.pixels.foreach_set(crop.ravel())
+        image.scale(max(1, round(crop.shape[1] * scale)), max(1, round(crop.shape[0] * scale)))
+        path = preview_png.with_name(f"garden_wight_fig{target}px.png")
+        image.filepath_raw = str(path)
+        image.file_format = 'PNG'
+        image.save()
+        bpy.data.images.remove(image)
+        written.append(path)
+    return written
+
+
+def render_check_views(scene, camera, dims: dict, config: dict, output_dir: Path) -> list:
+    """Back view (same 50 degree pitch) and bag-side view for visual review.
+
+    Orbits the preview camera around its aim point; the .blend is already
+    saved at this point, so the stored preview setup stays unchanged.
+    """
+    scene.cycles.samples = config["views_samples"]
+    aim = Vector(dims["camera_target"])
+    distance = config["preview_distance"]
+    side_yaw = 90.0 if dims["bag_sign"] > 0 else -90.0
+    views = (
+        ("back", 180.0, config["preview_pitch_deg"]),
+        ("side_bag", side_yaw, config["views_side_pitch_deg"]),
+    )
+    written = []
+    for name, yaw_deg, pitch_deg in views:
+        yaw, pitch = math.radians(yaw_deg), math.radians(pitch_deg)
+        # yaw 0 is the front camera on -Y (FRONT_SIGN); positive yaw orbits counter-clockwise.
+        horizontal = Vector((math.sin(yaw), FRONT_SIGN * math.cos(yaw), 0.0))
+        camera.location = aim + (horizontal * math.cos(pitch) + Vector((0.0, 0.0, math.sin(pitch)))) * distance
+        camera.rotation_euler = (math.pi / 2.0 - pitch, 0.0, yaw)
+        path = output_dir / f"garden_wight_{name}.png"
+        scene.render.filepath = str(path)
+        bpy.ops.render.render(write_still=True)
+        written.append(path)
+    return written
 
 
 # ---------------------------------------------------------------------------
@@ -857,6 +1073,14 @@ def parse_args(argv=None) -> argparse.Namespace:
         action="store_true",
         help="Also render the PNG preview (orthographic, ~50 degree downward tilt).",
     )
+    parser.add_argument(
+        "--views",
+        action="store_true",
+        help=(
+            "Visual check set (implies --render): back and bag-side renders plus "
+            "preview crops at 96/48 px figure height."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -881,12 +1105,13 @@ def main() -> None:
 
     char_coll, _root = build_character(CONFIG, dims)
     report_bounding_height(char_coll, dims, CONFIG)
+    report_part_intersections(char_coll)
 
     glb_path = output_dir / "garden_wight.glb"
     export_glb(glb_path, char_coll)
     print(f"[garden_wight] Exported GLB (figure only, no camera/light/ground): {glb_path}")
 
-    build_preview_setup(CONFIG, dims)
+    camera, _ground = build_preview_setup(CONFIG, dims)
 
     png_path = output_dir / "garden_wight_preview.png"
     configure_render(bpy.context.scene, CONFIG, png_path)
@@ -895,9 +1120,15 @@ def main() -> None:
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_path))
     print(f"[garden_wight] Saved preview .blend (character + preview setup): {blend_path}")
 
-    if args.render:
+    if args.render or args.views:
         bpy.ops.render.render(write_still=True)
         print(f"[garden_wight] Rendered preview PNG: {png_path}")
+
+    if args.views:
+        for path in write_figure_height_crops(bpy.context.scene, camera, char_coll, CONFIG, png_path):
+            print(f"[garden_wight] Wrote figure-height crop: {path}")
+        for path in render_check_views(bpy.context.scene, camera, dims, CONFIG, output_dir):
+            print(f"[garden_wight] Rendered check view: {path}")
 
 
 if __name__ == "__main__":

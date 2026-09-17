@@ -6,6 +6,9 @@ Blender im Hintergrundmodus ausgeführt wird und `.blend`-Quelldateien sowie
 `.glb`-Exporte für Godot erzeugt. Keine Add-ons, keine externen
 Python-Pakete, keine heruntergeladenen Assets.
 
+Arbeitsweise (Daten-API statt Operatoren, visuelle Feedbackschleife,
+Prüfungen): **[BLENDER_WORKFLOW.md](BLENDER_WORKFLOW.md)**.
+
 ## garden_wight.py — Gartenwicht (Player-Charakter)
 
 Erste statische Version des nichtmenschlichen Spielercharakters: ein
@@ -26,8 +29,9 @@ gedrungener, birnenförmiger Gartenwicht.
 - **`.L`/`.R`** folgen Blenders Spiegelkonvention: linke Körperseite der
   Figur = +X.
 - **Alle `CONFIG`-Maße sind volle Ausdehnungen** (Durchmesser, Länge,
-  Breite, Höhe) — nie Radien. Primitives werden in Einheitsgröße erzeugt und
-  auf diese Maße skaliert, `body_width` ist also wirklich der größte
+  Breite, Höhe) — nie Radien. Teile werden per `bmesh` in Einheitsgröße
+  erzeugt und auf diese Maße skaliert; die Skalierung steckt in den
+  Mesh-Daten, nicht im Objekt. `body_width` ist also wirklich der größte
   Durchmesser des fertigen Körpers.
 - Verhältniswerte (`*_ratio`) sind Anteile von `body_height`, gemessen ab dem
   tiefsten Punkt des Körpers.
@@ -50,18 +54,26 @@ gedrungener, birnenförmiger Gartenwicht.
   `foot_forward` schiebt sie so weit nach vorn, dass die Spitzen in der
   50°-Vorschau unter dem Bauch sichtbar sind.
 - **Hände**: zwei kurze, abgerundete Stubs ohne Finger, an der Flanke
-  eingebettet; die unteren Enden spreizen leicht nach außen (hängende
-  Haltung).
+  eingebettet und um `hand_forward` nach vorn versetzt; die unteren Enden
+  spreizen leicht nach außen (hängende Haltung). Auf der Beutelseite bleiben
+  sie frei von Beutel, Klappe und Riemen (automatisch geprüft).
 - **Augen**: zwei dunkle Kugeln auf dem Rotationsquerschnitt der Kopfhöhe,
   um `eye_protrusion` nach außen versetzt, deutlich unterhalb der
-  Kappenkrempe.
+  Kappenkrempe. Je ein kleiner weißer Glanzpunkt (`EyeShine.*`,
+  `eye_shine_diameter`, 0 = aus), auf beiden Augen gleich oben und zur rechten
+  Körperseite (−X) versetzt.
 - **Kappe**: per bmesh direkt erzeugter Kegel entlang einer gekrümmten
   Mittellinie: gerade bis `cap_bend_start`, danach biegt sich die Spitze um
   `cap_bend_deg` zur Neigungsseite (+X). Kein Modifier. Objektursprung auf der
-  Krempenmitte, `cap_lean_deg` kippt die Kappe um ihre Basis; Unterseite
-  geschlossen.
-- **Samenbeutel**: abgerundeter Quader an der Flanke gegenüber der
-  Kappenneigung (−X).
+  Krempenmitte, `cap_lean_deg` kippt die Kappe um ihre Basis. Die Krempe
+  ragt `cap_brim_width` über die Basis hinaus und hängt hinten und seitlich um
+  `cap_brim_droop` herab; vorne ist der Überhang zu `cap_brim_front_lift`
+  angehoben, damit die Augen frei bleiben. Lippe mit `cap_brim_thickness`,
+  Unterseite geschlossen.
+- **Samenbeutel**: abgerundeter Quader (Kanten per `bmesh`-Bevel,
+  `bag_bevel`) an der Flanke gegenüber der Kappenneigung (−X), mit Klappe
+  (`BagFlap`): Deckel plus vordere Lasche über `bag_flap_depth_ratio` der
+  Beutelhöhe, im dunkleren Riemen-Ocker.
 - **Riemen (Schultergurt)**: geschlossenes Band als Schlaufe auf der
   Beutelseite: von der Vorderkante des Beuteldeckels an der vorderen Flanke
   neben dem Gesicht hoch, über die Schulter (Scheitel bei 90°, Höhe
@@ -76,6 +88,10 @@ gedrungener, birnenförmiger Gartenwicht.
   zwischen Augen und Hand. Der Arm ragt durch die Schlaufe.
 - **Materialien**: flache, matte Principled-BSDF-Materialien (hohe Rauheit,
   kein Metallic), keine Texturen.
+- **Mesh-Auflösung und Schattierung**: `body_segments`, `part_segments`,
+  `cap_segments`, `strap_samples_per_span`; zusammen ca. 9 200 Dreiecke.
+  Alles glatt schattiert; Beutel, Klappe, Riemen und Krempe behalten Kanten
+  über `smooth_angle_deg` scharf.
 
 Alle Maße, Positionen und Farben stehen zentral im `CONFIG`-Dict am
 Skriptanfang; `derive_dimensions()` löst daraus alle konkreten
@@ -113,18 +129,29 @@ blender --background --factory-startup --python-exit-code 1 --python \
   Arbeitsverzeichnis aufgelöst, aus dem Blender gestartet wurde). Standard:
   `build/characters/garden_wight`.
 - `--render` (optional): erzeugt zusätzlich die PNG-Vorschau.
+- `--views` (optional, schließt `--render` ein): Prüfsatz für die visuelle
+  Feedbackschleife – `garden_wight_back.png` (50°), `garden_wight_side_bag.png`
+  (Beutelseite, 20°) und `garden_wight_fig96px.png` / `garden_wight_fig48px.png`
+  (Vorschau auf die Figur zugeschnitten, Figur 96 bzw. 48 px hoch). Gibt die
+  Figurenhöhe im Vorschaubild aus.
+
+Jeder Lauf prüft außerdem Durchdringungen zwischen Teilen, die sich nicht
+berühren dürfen (`SEPARATE_PARTS`, BVH-Overlap der Meshes), und meldet
+`WARNING intersection: …` sowie eine Zusammenfassung. Der Lauf bricht dabei
+nicht ab.
 
 Erzeugte Dateien:
 
 - `garden_wight.blend` — Charakter-Collection `GardenWight_Character` **und**
   Vorschau-Setup `GardenWight_PreviewSetup` (Boden, Sonne, orthografische
-  Kamera).
+  Kamera; alles über `bpy.data` angelegt).
 - `garden_wight.glb` — **ausschließlich** die Figur inklusive Materialien.
   Der Export läuft, bevor das Vorschau-Setup überhaupt existiert. Geprüft:
-  11 Nodes (`GardenWight_Root` + 10 Mesh-Teile), 6 Materialien, keine
-  Kameras, Lichter oder Boden. Mesh-Namen entsprechen den Objektnamen, außer
-  beim Körper: Node `Body`, Mesh `Body_Mesh`.
-- `garden_wight_preview.png` (nur mit `--render`).
+  14 Nodes (`GardenWight_Root` + 13 Mesh-Teile), 7 Materialien, keine
+  Kameras, Lichter oder Boden, keine Node-Skalierung; Mesh-Namen entsprechen
+  den Objektnamen.
+- `garden_wight_preview.png` (mit `--render` oder `--views`), dazu die
+  `--views`-Prüfbilder.
 
 ### Vorschaukamera und Renderweg
 
@@ -147,43 +174,44 @@ Automatik.
 ### Stand und Prüfungen
 
 **Bildhöhe vs. Figurenhöhe:** Die Vorschau ist 1024 px hoch, die Figur nimmt
-darin 553 px ein. Kleinprüfungen beziehen sich auf die **Figurenhöhe**; die
-Prüfbilder sind auf den Figurenrahmen zugeschnitten und so skaliert, dass die
-Figur 96 bzw. 48 px hoch ist. (Die Angaben „96/48 px“ beim ersten Lauf waren
-Bildhöhen, die Figur war dort nur ca. 52/26 px hoch.)
+darin 553 px ein (vom Generator ausgegeben). Kleinprüfungen beziehen sich auf
+die **Figurenhöhe**.
 
-Ausgeführt (Blender 5.2.1 LTS, Windows, Nutzer-PC; Protokolle lokal unter
-`build/characters/garden_wight/run.log` und `views.log`):
+Ausgeführt mit dem Stand dieses Commits (Blender 5.2.1 LTS, Windows,
+Nutzer-PC; Protokoll lokal unter `build/characters/garden_wight/run.log`):
 
-- Generator mit `--render`: Exit 0; `.blend`, `.glb`, PNG erzeugt; gebaute
-  Höhe 0,942, Sohlen auf z = 0.
-- Vorschau (`docs/previews/garden_wight.png`): Augen frei, der Riemen läuft
-  links neben dem Gesicht senkrecht zur Schulter; kein Bogen unter den Augen.
-- Rückansicht 50° (`garden_wight_back.png`) und Beutelseite 20°
-  (`garden_wight_side_bag.png`): durchgehende Schlaufe über die Schulter,
-  beide Enden im Beutel, keine freien Enden, kein sichtbares Eintauchen in den
-  Körper.
-- Figurenhöhe 96 px (`garden_wight_fig96px.png`): Augen, Kappe, Riemen als
-  seitlicher Gurt erkennbar, nicht als Mund. Figurenhöhe 48 px
-  (`garden_wight_fig48px.png`): Augen als Punkte lesbar, der Riemen ist nur noch
-  ein schmaler ockerfarbener Streifen links – nicht mundartig, aber kaum als
-  Gurt identifizierbar.
-- GLB-JSON: 11 Nodes, 10 Meshes, 6 Materialien, keine Kameras/Lichter/Boden;
-  Augen bei glTF z = +0,255 (Gesicht vorne +Z); Riemen-Mesh reicht von
-  z = −0,211 bis +0,211 (Vorder- und Rückseite).
+- Generator mit `--views`: Exit 0; `.blend`, `.glb`, Vorschau und vier
+  Prüfbilder erzeugt; gebaute Höhe 0,949, Sohlen auf z = 0;
+  Durchdringungsprüfung 0 von 15 Paaren.
+- Alle Bilder angesehen (Kopien unter `docs/previews/`):
+  - Vorschau `garden_wight.png`: ganze Figur, Augen mit Glanzpunkt frei,
+    Krempe mit Überhang, Gurt links neben dem Gesicht, kein Mund-Bogen,
+    Füße sichtbar.
+  - Rückansicht `garden_wight_back.png` und Beutelseite
+    `garden_wight_side_bag.png`: durchgehende Gurtschlaufe über die Schulter,
+    Enden in Klappe und Beutel, Hand frei vom Beutel, kein sichtbares
+    Versinken.
+  - `garden_wight_fig96px.png` (Figur 96 px): Augen samt Glanzpunkt, Kappe
+    und Gurt erkennbar. `garden_wight_fig48px.png` (Figur 48 px): Augen und
+    Kappe lesbar, der Gurt nur als schmaler Ockerstreifen.
+- GLB-JSON: 14 Nodes, 13 Meshes, 7 Materialien, ca. 9 200 Dreiecke, keine
+  Kameras/Lichter/Boden, keine Node-Skalierung; Augen bei glTF z = +0,255
+  (Gesicht vorne +Z).
 - Rechnerisch (Python ohne Blender): Mindestabstand der Riemen-Innenseite zur
   Körperoberfläche = `strap_lift`; alle Riemenabschnitte unterhalb der
   Beuteloberkante liegen samt Endbreite und Dicke im Beutelquader.
+- Zwei Exporte derselben Revision verglichen: JSON und alle Positionen und
+  Normalen identisch; bei den UV-Kugel-Meshes (Körper, Augen, Glanzpunkte,
+  Füße, Hände)
+  unterscheidet sich nur die **Reihenfolge** der Dreiecke, die Dreiecksmengen
+  sind gleich. Vor-Triangulierung per `bmesh` behebt das nicht. Die Ursache
+  liegt vermutlich im glTF-Exporter; keine sichtbaren Auswirkungen.
 
-Ausstehend: Godot-Import, andere Blender-Versionen.
+Ausstehend (NOT RUN): Godot-Import, andere Blender-Versionen.
 
 Offene visuelle Befunde:
 
-1. **Knick am Beutel.** In der 50°-Vorschau knickt der Gurt über dem
-   Beuteldeckel von der Querrichtung in den senkrechten Lauf; an den
-   Stützpunkten sind leichte Kanten im flach schattierten Band sichtbar.
-2. **48 px Figurenhöhe:** Gurt kaum lesbar (siehe oben).
-3. Der Beutel ist ein schlichter Quader; die Gurtenden verschwinden im Deckel
-   statt an sichtbaren Laschen.
-4. Zwei Läufe derselben Revision erzeugen GLBs mit identischem JSON-Teil,
-   aber abweichendem Binärpuffer (gleiche Länge); Ursache nicht untersucht.
+1. **48 px Figurenhöhe:** Der Gurt ist kaum als Gurt lesbar.
+2. **Hände** wirken aus der 50°-Kamera noch leicht wie seitliche Ohren.
+3. **Knick am Beutel:** Der Gurt biegt über der Klappe deutlich in den
+   senkrechten Lauf.
