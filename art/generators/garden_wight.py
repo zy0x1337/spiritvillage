@@ -10,9 +10,13 @@ Conventions
 -----------
 * **Z-up**, both foot soles on ``z = 0``, whole figure ~1 Blender unit tall.
 * The character **faces -Y**: Blender's Front view (Numpad 1) looks from
-  -Y towards +Y and therefore shows the face, and -Y maps to the -Z
-  forward axis that Godot expects after the glTF Y-up conversion. Eyes,
-  strap and preview camera all use this same front side (``FRONT_SIGN``).
+  -Y towards +Y and therefore shows the face. The glTF exporter maps
+  Blender -Y to glTF **+Z** (checked in the exported GLB: eye nodes sit at
+  +Z), which is glTF's asset-front convention and Godot's
+  ``Vector3.MODEL_FRONT`` - *not* Godot's -Z node forward (Godot import not
+  yet run). Eyes, strap and preview camera all use this same front side
+  (``FRONT_SIGN``). ``.L``/``.R`` follow Blender's mirror convention: the
+  character's left side is +X.
 * **Every size in CONFIG is a full extent** (diameter / length / width /
   height), never a radius. Primitives are created at unit size and
   scaled to those extents, so ``body_width`` really is the widest
@@ -21,11 +25,9 @@ Conventions
 IMPORTANT - environment assumption
 -----------------------------------
 The modelling code only runs inside Blender's own Python (``bpy`` /
-``bmesh`` only exist inside a running Blender process). It targets the
-**Blender 4.5 LTS** Python/glTF API as a provisional baseline; the
-version installed on the artist's machine has not been confirmed yet -
-check ``bpy.app.version`` before relying on API details here (see
-art/README.md).
+``bmesh`` only exist inside a running Blender process). Verified with
+**Blender 5.2.1 LTS** (background, factory startup); older versions such
+as 4.5 LTS are untested (see art/README.md).
 
 The ``bpy`` import is deliberately soft: the pure geometry helpers
 (``derive_dimensions`` and friends) can be imported and checked with a
@@ -56,11 +58,10 @@ from pathlib import Path
 try:  # Blender-only modules - see "environment assumption" above.
     import bpy
     import bmesh
-    from mathutils import Matrix, Vector
+    from mathutils import Vector
 except ImportError:  # pragma: no cover - outside Blender
     bpy = None
     bmesh = None
-    Matrix = None
     Vector = None
 
 
@@ -81,32 +82,34 @@ CONFIG = {
     "foot_width": 0.13,           # along X
     "foot_height": 0.09,          # along Z
     "foot_spacing": 0.17,         # centre-to-centre distance
-    "foot_forward": 0.025,        # shift towards the face side
+    "foot_forward": 0.10,         # shift towards the face side; toes peek out under the belly
     # Hands (short rounded stubs, no fingers).
     "hand_length": 0.17,
     "hand_diameter": 0.14,
-    "hand_height_ratio": 0.52,
+    "hand_height_ratio": 0.45,
     "hand_embed": 0.35,           # fraction of hand_diameter pushed into the body
-    "hand_angle_deg": 22.0,       # outward lean of the stubs
+    "hand_angle_deg": 22.0,       # outward splay of the stubs' lower ends
     # Eyes.
     "eye_diameter": 0.075,
     "eye_spacing": 0.16,          # centre-to-centre distance
-    "eye_height_ratio": 0.74,     # kept clear below the cap's brim
+    "eye_height_ratio": 0.68,     # kept clear below the cap's brim
     "eye_protrusion": 0.35,       # fraction of eye_diameter standing out of the body
     # Cap (asymmetric, folded tip). Rotates about its own base.
     "cap_base_diameter": 0.46,
     "cap_height": 0.30,
-    "cap_base_height_ratio": 0.90,
-    "cap_lean_deg": 16.0,         # sideways lean (about Y) -> asymmetry
-    "cap_bend_deg": 55.0,         # folds the upper part of the tip over
+    "cap_base_height_ratio": 0.84,
+    "cap_lean_deg": 10.0,         # sideways lean (about Y) -> asymmetry, tip towards +X
+    "cap_bend_deg": 95.0,         # total droop of the upper tip, towards the lean side
+    "cap_bend_start": 0.45,       # fraction of cap_height where the droop begins
     # Seed bag + strap.
     "bag_size": (0.15, 0.10, 0.17),   # full x, y, z extents
     "bag_height_ratio": 0.24,     # low enough for the strap to read as a diagonal
     "bag_embed": 0.35,            # fraction of bag x-extent overlapping the flank
     "strap_width": 0.05,          # across the band
-    "strap_depth": 0.10,          # through the body, so the band stays visible
-    "strap_shoulder_ratio": 0.70,
-    "strap_shoulder_offset": 0.30,   # fraction of the body radius at shoulder height
+    "strap_thickness": 0.018,     # band thickness; the band follows the body surface
+    "strap_lift": 0.006,          # gap between body surface and the band's inner side
+    "strap_shoulder_ratio": 0.58,   # below the eyes, so the band never crosses them
+    "strap_shoulder_offset": 0.97,   # fraction of the body radius at shoulder height
     # Preview only (never exported to GLB).
     "preview_pitch_deg": 50.0,    # camera tilt below the horizon
     "preview_distance": 3.0,      # orthographic: affects clipping/placement, not scale
@@ -126,10 +129,7 @@ CONFIG = {
 
 COLLECTION_NAME = "GardenWight_Character"
 PREVIEW_COLLECTION_NAME = "GardenWight_PreviewSetup"
-BLENDER_API_TARGET = (
-    "4.5 LTS (assumed provisional baseline - verify bpy.app.version "
-    "against the Blender actually installed before trusting API details)"
-)
+BLENDER_API_TARGET = "5.2.1 LTS (verified); older versions untested"
 
 # The character faces -Y; the preview camera sits on that same side.
 FRONT_SIGN = -1.0
@@ -137,23 +137,31 @@ FRONT_SIGN = -1.0
 # Radius of the source sphere the body is deformed from.
 SPHERE_RADIUS = 0.5
 
+# How much narrower (fraction) the head end of the pear is than the belly.
+PEAR_HEAD_TAPER = 0.26
+
 
 # ---------------------------------------------------------------------------
 # Pure geometry - no bpy, so these can be checked outside Blender.
 # ---------------------------------------------------------------------------
 
+def _smoothstep(edge0: float, edge1: float, x: float) -> float:
+    x = min(max((x - edge0) / (edge1 - edge0), 0.0), 1.0)
+    return x * x * (3.0 - 2.0 * x)
+
+
 def _pear_radius_factor(t: float) -> float:
     """Extra taper applied on top of the source sphere at height fraction t.
 
-    Produces a rounded belly around t~0.4 and a gentle pinch near the
-    neck (t~0.62), so the head reads as a smaller lobe on top of the
-    body without a hard seam ("Kopf und Rumpf gehen optisch ineinander
-    über").
+    The lower half keeps the sphere's full, rounded belly; the upper half
+    narrows smoothly into the head, so head and trunk read as one soft
+    pear without a seam ("Kopf und Rumpf gehen optisch ineinander über").
+
+    First Blender run: the earlier ``sin(t*pi)**0.7`` belly multiplied the
+    sphere's own falloff twice and produced a diamond with a pointed base.
     """
     t = min(max(t, 0.0), 1.0)
-    belly = math.sin(t * math.pi) ** 0.7
-    neck_pinch = 1.0 - 0.25 * math.exp(-((t - 0.62) ** 2) / 0.012)
-    return max(belly * neck_pinch, 0.08)
+    return 1.0 - PEAR_HEAD_TAPER * _smoothstep(0.30, 0.85, t)
 
 
 def _body_profile(t: float) -> float:
@@ -255,28 +263,14 @@ def derive_dimensions(config: dict) -> dict:
     dims["bag_top_z"] = bag_z + bag_z_size / 2.0
     dims["body_radius_at_bag"] = bag_r
 
-    # Strap: straight band from the opposite shoulder down to the bag's top,
-    # laid over the front of the chest. Endpoints are exact; the band is a
-    # simple box, so it grazes/intersects the curved chest in between.
+    # Strap: diagonal band from the opposite shoulder down to the bag's top,
+    # laid over the front of the chest. The endpoints are fixed here; the
+    # band itself follows the body surface in between (see strap_path()).
     shoulder_z = _height_at(config, config["strap_shoulder_ratio"])
     shoulder_r = body_radius_at(shoulder_z, config)
     start_x = -bag_sign * shoulder_r * config["strap_shoulder_offset"]
-    end_x = dims["bag_center"][0]
-    end_z = dims["bag_top_z"]
-    delta_x = end_x - start_x
-    delta_z = end_z - shoulder_z
     dims["strap_start"] = (start_x, shoulder_z)
-    dims["strap_end"] = (end_x, end_z)
-    dims["strap_length"] = math.hypot(delta_x, delta_z)
-    # Box' local +Z runs along the band: rotating by this angle about Y maps
-    # (0, 0, 1) onto the normalised (delta_x, 0, delta_z).
-    dims["strap_angle_y"] = math.atan2(delta_x, delta_z)
-    dims["strap_y"] = FRONT_SIGN * min(shoulder_r, bag_r) * 0.80
-    dims["strap_center"] = (
-        (start_x + end_x) / 2.0,
-        dims["strap_y"],
-        (shoulder_z + end_z) / 2.0,
-    )
+    dims["strap_end"] = (dims["bag_center"][0], dims["bag_top_z"])
     dims["body_radius_at_shoulder"] = shoulder_r
 
     # Overall silhouette of the assembled figure.
@@ -290,6 +284,31 @@ def derive_dimensions(config: dict) -> dict:
 
     dims.update(_derive_preview(config, dims))
     return dims
+
+
+def strap_path(config: dict, dims: dict, samples: int = 24) -> list:
+    """Centre line of the strap's inner side, lying on the front of the body.
+
+    Interpolates straight between the strap endpoints in X/Z and projects
+    each point forward onto the body's surface of revolution (plus
+    ``strap_lift``). Past the body's silhouette (the bag end) the point
+    stays at the silhouette plane instead of cutting through the body.
+    Returns ``(x, y, z, nx, ny)`` tuples; ``(nx, ny)`` is the horizontal
+    outward surface normal at that point.
+    """
+    (start_x, start_z), (end_x, end_z) = dims["strap_start"], dims["strap_end"]
+    lift = config["strap_lift"]
+    points = []
+    for i in range(samples + 1):
+        s = i / samples
+        x = start_x + (end_x - start_x) * s
+        z = start_z + (end_z - start_z) * s
+        r = body_radius_at(z, config)
+        depth = math.sqrt(max(r * r - x * x, 0.0))
+        length = math.hypot(x, depth) or 1.0
+        nx, ny = x / length, FRONT_SIGN * depth / length
+        points.append((x + nx * lift, FRONT_SIGN * depth + ny * lift, z, nx, ny))
+    return points
 
 
 def _derive_preview(config: dict, dims: dict) -> dict:
@@ -343,7 +362,8 @@ def get_or_create_material(name: str, rgba):
     mat = bpy.data.materials.get(name)
     if mat is None:
         mat = bpy.data.materials.new(name)
-    mat.use_nodes = True
+    if bpy.app.version < (5, 0, 0):  # node materials are the default from 5.0 on
+        mat.use_nodes = True
     mat.diffuse_color = rgba
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
     if bsdf is not None:
@@ -379,6 +399,7 @@ def _add_unit_sphere(name: str, extents, location, rotation=(0.0, 0.0, 0.0)):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=SPHERE_RADIUS, segments=16, ring_count=10)
     obj = bpy.context.active_object
     obj.name = name
+    obj.data.name = name
     obj.scale = extents
     obj.location = location
     obj.rotation_euler = rotation
@@ -391,6 +412,7 @@ def _add_unit_box(name: str, extents, location, rotation=(0.0, 0.0, 0.0)):
     bpy.ops.mesh.primitive_cube_add(size=1.0)
     obj = bpy.context.active_object
     obj.name = name
+    obj.data.name = name
     obj.scale = extents
     obj.location = location
     obj.rotation_euler = rotation
@@ -435,7 +457,7 @@ def build_body(config: dict, dims: dict):
 def build_feet(config: dict, dims: dict) -> list:
     material = get_or_create_material("Mat_FeetBrown", config["colors"]["feet_brown"])
     feet = []
-    for side, sign in (("L", -1.0), ("R", 1.0)):
+    for side, sign in (("L", 1.0), ("R", -1.0)):
         obj = _add_unit_sphere(
             f"Foot.{side}",
             extents=(config["foot_width"], config["foot_length"], config["foot_height"]),
@@ -449,13 +471,14 @@ def build_feet(config: dict, dims: dict) -> list:
 def build_hands(config: dict, dims: dict) -> list:
     material = get_or_create_material("Mat_SkinCream", config["colors"]["skin_cream"])
     hands = []
-    for side, sign in (("L", -1.0), ("R", 1.0)):
+    for side, sign in (("L", 1.0), ("R", -1.0)):
         obj = _add_unit_sphere(
             f"Hand.{side}",
             extents=(config["hand_diameter"], config["hand_diameter"], config["hand_length"]),
             location=(sign * dims["hand_x"], 0.0, dims["hand_z"]),
-            # Relaxed pose: the stubs lean outwards, away from the body.
-            rotation=(0.0, sign * math.radians(config["hand_angle_deg"]), 0.0),
+            # Relaxed, hanging pose: the lower ends splay outwards. (Tilting the
+            # upper ends out read as ears from the elevated preview camera.)
+            rotation=(0.0, -sign * math.radians(config["hand_angle_deg"]), 0.0),
         )
         obj.data.materials.append(material)
         hands.append(obj)
@@ -466,7 +489,7 @@ def build_eyes(config: dict, dims: dict) -> list:
     material = get_or_create_material("Mat_EyesDark", config["colors"]["eyes_dark"])
     diameter = config["eye_diameter"]
     eyes = []
-    for side, sign in (("L", -1.0), ("R", 1.0)):
+    for side, sign in (("L", 1.0), ("R", -1.0)):
         obj = _add_unit_sphere(
             f"Eye.{side}",
             extents=(diameter, diameter, diameter),
@@ -478,34 +501,108 @@ def build_eyes(config: dict, dims: dict) -> list:
 
 
 def build_cap(config: dict, dims: dict):
-    """Asymmetric moss-green leaf cap with a folded-over tip.
+    """Asymmetric moss-green leaf cap with a drooping tip.
 
-    The cone's mesh is shifted so the object origin sits at the brim,
-    which makes ``cap_lean_deg`` rotate the cap around its base instead
-    of around its middle.
+    Built directly as a cone swept along a curved spine: straight up to
+    ``cap_bend_start``, then curling by ``cap_bend_deg`` towards +X (the
+    lean side). The mesh origin sits at the brim centre, so
+    ``cap_lean_deg`` tilts the cap around its base.
+
+    First Blender run: a Simple Deform (Bend, axis X) modifier used here
+    before bent the cone across its width and left a flat, floating sail,
+    hence the explicit geometry (no modifier to apply on export).
     """
-    bpy.ops.mesh.primitive_cone_add(
-        radius1=config["cap_base_diameter"] / 2.0,
-        radius2=0.0,
-        depth=config["cap_height"],
-        vertices=20,
-        location=(0.0, 0.0, 0.0),
-    )
-    obj = bpy.context.active_object
-    obj.name = "Cap"
-    obj.data.transform(Matrix.Translation((0.0, 0.0, config["cap_height"] / 2.0)))
+    rings, segments = 14, 24
+    height = config["cap_height"]
+    base_radius = config["cap_base_diameter"] / 2.0
+    bend = math.radians(config["cap_bend_deg"])
+    bend_start = config["cap_bend_start"]
+
+    bm = bmesh.new()
+    # Spine lies in the XZ plane, so every ring uses the same fixed Y axis
+    # and the cross-section cannot twist.
+    position = Vector((0.0, 0.0, 0.0))
+    step = height / rings
+    ring_verts = []
+    for i in range(rings + 1):
+        s = i / rings
+        curl = max(0.0, (s - bend_start) / (1.0 - bend_start)) ** 1.5
+        angle = bend * curl
+        tangent = Vector((math.sin(angle), 0.0, math.cos(angle)))
+        side = Vector((0.0, 1.0, 0.0))
+        normal = side.cross(tangent)  # in-plane, perpendicular to the spine
+        if i > 0:
+            position = position + tangent * step
+        radius = base_radius * (1.0 - s) ** 0.85
+        if i == rings:
+            ring_verts.append([bm.verts.new(position)])
+            break
+        ring = []
+        for j in range(segments):
+            phi = 2.0 * math.pi * j / segments
+            ring.append(bm.verts.new(position + (normal * math.cos(phi) + side * math.sin(phi)) * radius))
+        ring_verts.append(ring)
+
+    for lower, upper in zip(ring_verts[:-1], ring_verts[1:-1]):
+        for j in range(segments):
+            k = (j + 1) % segments
+            bm.faces.new((lower[j], lower[k], upper[k], upper[j]))
+    last, tip = ring_verts[-2], ring_verts[-1][0]
+    for j in range(segments):
+        bm.faces.new((last[j], last[(j + 1) % segments], tip))
+    bm.faces.new(list(reversed(ring_verts[0])))  # closed brim underside
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    mesh = bpy.data.meshes.new("Cap")
+    bm.to_mesh(mesh)
+    bm.free()
+    _shade_smooth(mesh)
+
+    obj = bpy.data.objects.new("Cap", mesh)
     obj.location = (0.0, 0.0, dims["cap_base_z"])
     obj.rotation_euler = (0.0, math.radians(config["cap_lean_deg"]), 0.0)
-
-    fold = obj.modifiers.new("Fold", type='SIMPLE_DEFORM')
-    fold.deform_method = 'BEND'
-    fold.deform_axis = 'X'          # bends the tip towards +/-Y (front/back)
-    fold.angle = math.radians(config["cap_bend_deg"])
-    fold.limits = (0.55, 1.0)       # only the upper part of the tip folds
-
-    _shade_smooth(obj.data)
     obj.data.materials.append(get_or_create_material("Mat_CapMoss", config["colors"]["cap_moss"]))
     return obj
+
+
+def build_strap(config: dict, dims: dict):
+    """Closed band following the chest surface along ``strap_path()``.
+
+    First Blender run: the earlier straight box sank into the curved chest
+    and only its upper end poked out between the eyes.
+    """
+    half_width = config["strap_width"] / 2.0
+    thickness = config["strap_thickness"]
+    path = strap_path(config, dims)
+
+    bm = bmesh.new()
+    sections = []
+    for i, (x, y, z, nx, ny) in enumerate(path):
+        prev_pt = Vector(path[max(i - 1, 0)][:3])
+        next_pt = Vector(path[min(i + 1, len(path) - 1)][:3])
+        along = (next_pt - prev_pt).normalized()
+        outward = Vector((nx, ny, 0.0))
+        across = along.cross(outward).normalized()
+        inner = Vector((x, y, z))
+        outer = inner + outward * thickness
+        sections.append([
+            bm.verts.new(inner - across * half_width),
+            bm.verts.new(outer - across * half_width),
+            bm.verts.new(outer + across * half_width),
+            bm.verts.new(inner + across * half_width),
+        ])
+    for a, b in zip(sections[:-1], sections[1:]):
+        for j in range(4):
+            k = (j + 1) % 4
+            bm.faces.new((a[j], a[k], b[k], b[j]))
+    bm.faces.new(sections[0])
+    bm.faces.new(list(reversed(sections[-1])))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    mesh = bpy.data.meshes.new("Strap")
+    bm.to_mesh(mesh)
+    bm.free()
+    return bpy.data.objects.new("Strap", mesh)
 
 
 def build_bag_and_strap(config: dict, dims: dict) -> tuple:
@@ -515,12 +612,7 @@ def build_bag_and_strap(config: dict, dims: dict) -> tuple:
     bevel.segments = 2
     bag.data.materials.append(get_or_create_material("Mat_BagOchre", config["colors"]["bag_ochre"]))
 
-    strap = _add_unit_box(
-        "Strap",
-        extents=(config["strap_width"], config["strap_depth"], dims["strap_length"]),
-        location=dims["strap_center"],
-        rotation=(0.0, dims["strap_angle_y"], 0.0),
-    )
+    strap = build_strap(config, dims)
     strap.data.materials.append(
         get_or_create_material("Mat_StrapOchreDark", config["colors"]["strap_ochre_dark"])
     )
@@ -588,7 +680,8 @@ def export_glb(filepath: Path, collection) -> None:
     """Export only the character (geometry + materials) as GLB.
 
     Called before the preview setup exists, so no camera, light or
-    ground plane can leak into the file.
+    ground plane can leak into the file. The glTF exporter converts to
+    Y-up: the -Y face ends up on glTF +Z.
     """
     bpy.ops.object.select_all(action='DESELECT')
     for obj in collection.all_objects:
@@ -601,7 +694,7 @@ def export_glb(filepath: Path, collection) -> None:
         filepath=str(filepath),
         export_format='GLB',
         use_selection=True,
-        export_apply=True,       # bake modifiers (cap fold, bag bevel)
+        export_apply=True,       # bake modifiers (bag bevel)
         export_materials='EXPORT',
         export_cameras=False,
         export_lights=False,
@@ -655,7 +748,7 @@ def configure_render(scene, config: dict, output_path: Path) -> None:
 
     Cycles on CPU: this pipeline assumes no guaranteed GPU wherever the
     render is produced (e.g. a headless box), and Cycles' CPU device is
-    the most portable still-image path across Blender 4.x installs.
+    the most portable still-image path across Blender installs.
     """
     res_x, res_y = config["preview_resolution"]
     scene.render.engine = 'CYCLES'
@@ -715,7 +808,7 @@ def main() -> None:
     output_dir = Path(args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[garden_wight] Blender API target: {BLENDER_API_TARGET}")
+    print(f"[garden_wight] Blender {bpy.app.version_string}, API target: {BLENDER_API_TARGET}")
     print(f"[garden_wight] Output directory: {output_dir}")
 
     dims = derive_dimensions(CONFIG)

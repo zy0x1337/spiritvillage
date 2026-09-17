@@ -14,10 +14,17 @@ gedrungener, birnenförmiger Gartenwicht.
 ### Konventionen
 
 - **Z-up**, beide Fußsohlen exakt auf `z = 0`, Gesamthöhe ca. 1 Blender-Einheit.
-- **Blickrichtung −Y.** Blenders Frontansicht (Numpad 1) schaut von −Y nach
-  +Y und zeigt damit das Gesicht; nach der glTF-Y-up-Konvertierung
-  entspricht −Y der −Z-Vorwärtsachse, die Godot erwartet. Augen, Riemen und
-  Vorschaukamera verwenden dieselbe Vorderseite (`FRONT_SIGN`).
+- **Blickrichtung −Y** in Blender. Blenders Frontansicht (Numpad 1) schaut
+  von −Y nach +Y und zeigt das Gesicht. Augen, Riemen und Vorschaukamera
+  verwenden dieselbe Vorderseite (`FRONT_SIGN`).
+- **Im GLB zeigt das Gesicht nach glTF +Z** — geprüft in der exportierten
+  Datei (Augen-Nodes bei z = +0,255). Das ist die glTF-Vorderseitenkonvention
+  und entspricht in Godot `Vector3.MODEL_FRONT` (+Z), **nicht** der
+  −Z-Vorwärtsrichtung von `Node3D`/`look_at()`. In Godot also
+  `look_at(ziel, Vector3.UP, true)` verwenden oder das Modell um 180° drehen.
+  Der Godot-Import selbst ist noch nicht ausgeführt.
+- **`.L`/`.R`** folgen Blenders Spiegelkonvention: linke Körperseite der
+  Figur = +X.
 - **Alle `CONFIG`-Maße sind volle Ausdehnungen** (Durchmesser, Länge,
   Breite, Höhe) — nie Radien. Primitives werden in Einheitsgröße erzeugt und
   auf diese Maße skaliert, `body_width` ist also wirklich der größte
@@ -28,7 +35,8 @@ gedrungener, birnenförmiger Gartenwicht.
 ### Gestaltung
 
 - **Körper/Kopf**: ein einziges, parametrisch verformtes Mesh (Kugel →
-  Birnenform über eine radiale Profilfunktion). Die Profilfunktion wird
+  Birnenform über eine radiale Profilfunktion: untere Hälfte voll rund, obere
+  Hälfte per Smoothstep um `PEAR_HEAD_TAPER` verjüngt). Die Profilfunktion wird
   normiert, sodass die breiteste Stelle exakt `body_width` misst. Kopf und
   Rumpf gehen bewusst ohne Nahtstelle ineinander über. Dieses Mesh dient
   zugleich als sichtbarer cremefarbener Überwurf — für die erste statische
@@ -39,17 +47,23 @@ gedrungener, birnenförmiger Gartenwicht.
   `body_height`, wandern sie mit, statt auseinanderzudriften.
 - **Füße**: zwei kleine, dunkelbraune, abgeflachte Kugeln; Sohlen auf `z = 0`,
   Oberkante ragt in den Körper hinein, damit keine Lücke entsteht.
+  `foot_forward` schiebt sie so weit nach vorn, dass die Spitzen in der
+  50°-Vorschau unter dem Bauch sichtbar sind.
 - **Hände**: zwei kurze, abgerundete Stubs ohne Finger, an der Flanke
-  eingebettet und leicht nach außen geneigt.
+  eingebettet; die unteren Enden spreizen leicht nach außen (hängende
+  Haltung).
 - **Augen**: zwei dunkle Kugeln auf dem Rotationsquerschnitt der Kopfhöhe,
   um `eye_protrusion` nach außen versetzt, deutlich unterhalb der
   Kappenkrempe.
-- **Kappe**: Kegel, dessen Mesh so verschoben ist, dass der Objektursprung
-  auf der Krempe liegt — `cap_lean_deg` kippt die Kappe damit um ihre Basis.
-  Ein `Simple Deform`-Modifier (Bend, nur oberer Bereich) knickt die Spitze um.
+- **Kappe**: per bmesh direkt erzeugter Kegel entlang einer gekrümmten
+  Mittellinie: gerade bis `cap_bend_start`, danach biegt sich die Spitze um
+  `cap_bend_deg` zur Neigungsseite (+X). Kein Modifier. Objektursprung auf der
+  Krempenmitte, `cap_lean_deg` kippt die Kappe um ihre Basis; Unterseite
+  geschlossen.
 - **Samenbeutel & Riemen**: abgerundeter Quader an der Flanke gegenüber der
-  Kappenneigung; der Riemen ist ein schmales Band, dessen Endpunkte rechnerisch
-  auf Schulterpunkt und Beuteloberkante liegen.
+  Kappenneigung. Der Riemen ist ein geschlossenes Band, das `strap_path()` auf
+  der Körperoberfläche folgt (plus `strap_lift`), vom Schulterpunkt an der
+  Silhouette unterhalb der Augen bis zur Beuteloberkante.
 - **Materialien**: flache, matte Principled-BSDF-Materialien (hohe Rauheit,
   kein Metallic), keine Texturen.
 
@@ -59,11 +73,10 @@ Weltkoordinaten auf.
 
 ### Annahmen / API-Ziel
 
-- **Blender 4.5 LTS** als vorläufige API-Basis. Die tatsächlich installierte
-  Version ist noch nicht bestätigt — vor dem ersten echten Lauf
-  `bpy.app.version` prüfen und bei Abweichung die API-Aufrufe kontrollieren
-  (insbesondere `bmesh.ops.create_uvsphere`, die `export_scene.gltf`-Parameter
-  und den Node-Namen `"Principled BSDF"`).
+- **Geprüft mit Blender 5.2.1 LTS** (Windows, `--background
+  --factory-startup`, glTF-Exporter 5.2.40). Ältere Versionen (z. B. 4.5 LTS)
+  sind ungetestet. `Material.use_nodes` wird nur vor 5.0 gesetzt (ab 5.0
+  veraltet, Node-Materialien sind dort Standard).
 - Das Skript geht von einer **leeren Factory-Startup-Szene** aus und räumt am
   Anfang (`clear_scene()`) alles aus der Szene. Deshalb **nur** in einem
   eigenen Hintergrundprozess ausführen, niemals in einer geöffneten
@@ -78,12 +91,10 @@ Weltkoordinaten auf.
 Argumente werden **nach** `--` gelesen (Blender-Konvention).
 
 ```bash
-# Pfad zur Blender-Programmdatei ggf. anpassen — je nach Installation ist der
-# vollständige Pfad nötig, z. B. auf macOS
-# /Applications/Blender.app/Contents/MacOS/Blender oder unter Windows
-# "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe"
+# Pfad zur Blender-Programmdatei ggf. anpassen, z. B. unter Windows
+# "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe"
 
-blender --background --factory-startup --python \
+blender --background --factory-startup --python-exit-code 1 --python \
   art/generators/garden_wight.py -- \
   --output-dir build/characters/garden_wight --render
 ```
@@ -99,8 +110,9 @@ Erzeugte Dateien:
   Vorschau-Setup `GardenWight_PreviewSetup` (Boden, Sonne, orthografische
   Kamera).
 - `garden_wight.glb` — **ausschließlich** die Figur inklusive Materialien.
-  Der Export läuft, bevor das Vorschau-Setup überhaupt existiert, es können
-  also weder Kamera noch Licht noch Boden hineingeraten.
+  Der Export läuft, bevor das Vorschau-Setup überhaupt existiert. Geprüft:
+  11 Nodes (`GardenWight_Root` + 10 Mesh-Teile, Mesh-Namen = Objektnamen),
+  6 Materialien, keine Kameras, Lichter oder Boden.
 - `garden_wight_preview.png` (nur mit `--render`).
 
 ### Vorschaukamera und Renderweg
@@ -116,28 +128,29 @@ geprüft, damit die komplette Figur im Bild bleibt.
 **vor** `save_as_mainfile()` aufgerufen. Die gespeicherte `.blend` und ein
 eventuelles `--render`-PNG verwenden dadurch identische Einstellungen.
 Begründung für CPU: die Pipeline setzt nirgends eine konfigurierte GPU
-voraus; Cycles-CPU ist über Blender-4.x-Installationen hinweg der
+voraus; Cycles-CPU ist über Blender-Installationen hinweg der
 portabelste Weg zu einem Standbild. Auf einer GPU-Maschine kann
 `scene.cycles.device` bei Bedarf umgestellt werden — bewusst keine
 Automatik.
 
-### Bekannter Stand: ungeprüft in Blender
+### Stand: erster Blender-Lauf
 
-Das Skript wurde bisher **nur ohne Blender geprüft**: Python-Syntax,
-Argument-/Pfadlogik und die reinen Geometrieberechnungen
-(`derive_dimensions`, Maßnormierung, Anbauteil-Platzierung, Kamerarahmung).
-Ein tatsächlicher Blender-Lauf hat **nicht** stattgefunden — Mesh-Erzeugung,
-Modifier-Ergebnisse, GLB-Export, `.blend`-Speicherung und Rendering sind
-unbestätigt.
+Geprüft mit Blender 5.2.1 LTS: Prozess Exit 0, `.blend`, `.glb` und PNG
+erzeugt, gebaute Höhe 0,942 (Sohlen auf z = 0). Referenzvorschau:
+`docs/previews/garden_wight.png`.
 
-Beim ersten echten Render visuell beurteilen:
+Beim ersten Lauf behoben: rautenförmiger Körper mit spitzem Boden
+(Profilfunktion), verdrehte, schwebende Kappe (der Bend-Modifier bog quer zur
+Kegelachse), im Brustkorb versunkener Riemen (Box → Oberflächenband), in der
+Vorschau verdeckte Füße, ohrenartig abstehende Hände, vertauschte
+`.L`/`.R`-Namen.
 
-1. **Faltrichtung der Kappenspitze.** Der Bend-Modifier arbeitet um die
-   X-Achse; ob die Spitze nach vorne (−Y, sichtbar) oder nach hinten knickt,
-   hängt vom Vorzeichen ab. Notfalls `cap_bend_deg` negieren.
-2. **Riemenband am Brustkorb.** Das Band ist eine gerade Box zwischen zwei
-   exakt berechneten Endpunkten; auf der gewölbten Brust dazwischen kann es
-   teilweise eintauchen. Falls es verschwindet, `strap_depth` oder
-   `strap_y` anpassen.
-3. **Silhouette und Lesbarkeit bei kleiner Darstellung** — Verhältnis von
-   Körperbreite, Kappenkrempe und Augengröße aus der 50°-Kamera.
+Offene visuelle Befunde:
+
+1. **Riemen als Bogen.** Aus der 50°-Kamera wölbt sich das Band über den
+   runden Bauch und kann bei kleiner Darstellung wie ein Mund wirken.
+2. **Kleine Darstellung.** Bei ca. 96 px Bildhöhe sind Augen, Kappe und
+   Riemen erkennbar; bei ca. 48 px bleiben nur weiße Form und grüne Kappe,
+   die Augen sind kaum lesbar.
+3. **Riemenende an der Schulter** endet offen an der Silhouette, statt über
+   die Schulter nach hinten zu laufen; der Beutel ist ein schlichter Quader.

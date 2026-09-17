@@ -1,14 +1,15 @@
 # Status
 
-**Goal:** First static player character ("Garden Wight") as a reproducible Blender-Python generator. No Godot project, gameplay or animation yet.
+**Goal:** First static player character ("Garden Wight") as a reproducible Blender-Python generator. No Godot project, gameplay, rigging or animation yet.
 
 **Implemented:**
-- `art/generators/garden_wight.py` — standalone Blender script. Character faces -Y (Blender front view / Godot -Z); all CONFIG values are full extents; `derive_dimensions()` places every part from the actual body surface radius; soles on z=0; orthographic camera computed from the figure's size at 50° below horizontal; render settings applied before saving; GLB export runs before the preview setup exists, so it holds the figure only.
-- `art/README.md` — conventions, design, usage, camera/render rationale, open visual review points.
+- `art/generators/garden_wight.py` — standalone Blender script producing `.blend`, figure-only `.glb` and Cycles preview PNG. First real Blender run fixed body profile, cap geometry (bmesh, no modifier), surface-following strap, feet/hand placement, `.L`/`.R` naming.
+- `art/README.md` — conventions, design, usage, verified state, open visual findings.
+- `docs/previews/garden_wight.png` — real render (768×1024, 50° ortho).
 
-**Checks (no Blender here):** `py_compile` and argument/path logic — PASS. 29 numeric assertions on the script's geometry math — PASS: max diameter equals `body_width`, soles at z=0, box extents unhalved, eyes on the surface and clear of the cap brim, strap endpoints meeting shoulder and bag, bag/hand/ground clearance, camera pitch, aim and framing.
-**NOT RUN:** `bpy`/`bmesh` execution, mesh and modifier results, GLB export, `.blend` save, Cycles render, Godot import.
+**Checks (Blender 5.2.1 LTS, user PC, Windows):** generator with `--render` — PASS (exit 0, all three files written). Preview PNG viewed at full size, ~96 px and ~48 px — PASS for full figure, eyes, feet/ground contact, cap, strap. GLB JSON — PASS: 11 nodes (root + 10 meshes), 6 materials, no camera/light/ground; face on glTF +Z.
+**NOT RUN:** Godot import; Blender versions other than 5.2.1.
 
-**Environment limits:** This remote session has git and Python 3, no Blender or Godot binary. Their presence on the user's PC is unverified from here.
+**Open findings:** strap reads as an arc/mouth from 50°; eyes barely legible at ~48 px; Godot must treat +Z as model front (`look_at(..., true)` or 180° turn).
 
-**Next step:** Run the generator in real Blender with `--render`, then judge the three visual points listed in `art/README.md`.
+**Next step:** Godot import test, or visual tuning of strap/small-size readability.
