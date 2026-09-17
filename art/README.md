@@ -1,6 +1,6 @@
 # Art Pipeline
 
-Blender-Python-Generatoren für Spirit-Village-Figuren. Jeder Generator ist
+Blender-Python-Generatoren für Spirit-Village-Figuren und -Gebäude. Jeder Generator ist
 ein eigenständiges, reproduzierbares Skript unter `art/generators/`, das mit
 Blender im Hintergrundmodus ausgeführt wird und `.blend`-Quelldateien sowie
 `.glb`-Exporte für Godot erzeugt. Generatoren nutzen keine Add-ons, keine
@@ -218,3 +218,70 @@ Offene visuelle Befunde:
 2. **Hände** wirken aus der 50°-Kamera noch leicht wie seitliche Ohren.
 3. **Knick am Beutel:** Der Gurt biegt über der Klappe deutlich in den
    senkrechten Lauf.
+
+## Gebäude
+
+### bldg_cottage.py — Wurzelheim-Häuschen
+
+Rundes Häuschen nach `PIPELINE.md` 4a: cremeweiße Putzwand (leicht
+ausgestellter Fuß) auf einem Steinsockel, überstehendes Kuppeldach aus sieben
+Terrakotta-Schindelringen mit abgerundeten Ziegelzungen, Rundbogentür aus fünf
+Planken mit Eisenring, Holzrahmen, Rundfenster mit Sprossenkreuz, Wandlaterne
+am Eisenarm, zwei Steinstufen. Ca. 7 100 Dreiecke (Budget 8 000), 12
+Materialien, keine Texturen.
+
+**Konventionen** (zusätzlich zu PIPELINE.md Abschnitt 2):
+
+- Z-up in Blender, Tür nach −Y → im GLB nach **+Z**; Bodenkontakt z = 0,
+  Ursprung in der Mitte der Standfläche.
+- Tür, Rahmen und Fenster werden in Wandkoordinaten angelegt (`u` =
+  Bogenlänge, `v` = Höhe, `depth` = Abstand vor dem Putz) und über
+  `wall_point()` auf die gewölbte Wand gelegt. Tür- und Fensterkanten liegen
+  hinter einer Rahmenlippe, damit keine Lücke und keine Durchdringung
+  entsteht.
+- **Farben in `CONFIG` sind sRGB** (wie ein Farbwähler oder Godots
+  `albedo_color`) und werden für Blender/GLB linearisiert. Der Gartenwicht
+  verwendet noch lineare Werte.
+- Nodes: `Cottage_Root` → `Walls`, `Base`, `Roof`, `Door`, `DoorFrame`,
+  `Window`, `Lantern` (→ leerer `LanternLight` als Lichtanker), `Steps`.
+  `Door` hat seinen Ursprung auf der Scharnierkante (−X), Drehung um die
+  Hochachse öffnet sie.
+- Das Dach ist auf die 50°-Spielkamera abgestimmt: Die Traufe muss höher
+  hängen als etwa Überstand × tan 50° über dem Türrahmen, sonst verdeckt sie
+  die Türoberkante (erster Lauf: 0,3 m Überstand, Tür halb verdeckt).
+
+**Aufruf:**
+
+```bash
+"C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" --background \
+  --factory-startup --python-exit-code 1 --python art/generators/bldg_cottage.py -- \
+  --output-dir build/buildings/bldg_cottage --views
+```
+
+`--render`: Vorschau 50°. `--views`: zusätzlich Rückseite (50°), Seite
+Laternenseite (20°) und Größenvergleich mit dem Gartenwicht in
+Spielkamera-Dichte (S1: 18 m Bildhöhe auf 800 px) als `_game1x` (logische
+Pixel) und `_game3x` (≈ 1080 px breites Handy); braucht
+`build/characters/garden_wight/garden_wight.glb`.
+
+**Automatische Prüfungen** (jeder Lauf; Exit 1 bei Fehler, Dateien werden
+vorher geschrieben): Dreiecke je Teil und gesamt gegen Budget, tiefster Punkt
+= 0 ± 0,001, keine Objektskalierung, BVH-Durchdringung der Paare in
+`SEPARATE_PARTS`, GLB-JSON (alle Nodes vorhanden, keine Skalierung, keine
+Kameras/Lichter, `Door` bei glTF +Z). Die reinen Geometriefunktionen
+(`derive_dimensions`, `roof_rows`, `step_stones`, `inspect_glb`) laufen ohne
+Blender.
+
+**Stand** (Blender 5.2.1 LTS, Nutzer-PC, `--views`): Exit 0; 7 128 Dreiecke
+(GLB identisch), Höhe 2,77 m, tiefster Punkt 0,0000, 0 von 15 Paaren
+durchdringen sich, Door-Node glTF (−0,43; 0,19; 1,31). Bei 1× ist das Häuschen
+175 px hoch, der Gartenwicht 32 px. Alle Bilder angesehen, Kopien unter
+`docs/previews/bldg_cottage*.png`. Ausstehend (NOT RUN): Godot-Import,
+Handy-Ansicht.
+
+Offene visuelle Befunde:
+
+1. Aus 50° nimmt das Dach gut die Hälfte der Gebäudefläche ein; das folgt aus
+   der Kamera, ist aber stärker als in der Referenz.
+2. Schwache radiale Schattierungslinien in der glatten Dachkappe.
+3. Die Stufensteine wirken noch recht regelmäßig und blockhaft.
