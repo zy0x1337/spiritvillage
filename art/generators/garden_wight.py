@@ -4,7 +4,7 @@ Generates the first static version of the game's non-human player
 character: a small, pear-shaped garden gnome ("Gartenwicht") with a
 cream overcoat, an asymmetric moss-green leaf cap, dark round eyes, two
 short rounded hand-stubs, two small dark-brown feet, and an ochre seed
-bag on a diagonal strap.
+bag on a shoulder strap.
 
 Conventions
 -----------
@@ -103,13 +103,24 @@ CONFIG = {
     "cap_bend_start": 0.45,       # fraction of cap_height where the droop begins
     # Seed bag + strap.
     "bag_size": (0.15, 0.10, 0.17),   # full x, y, z extents
-    "bag_height_ratio": 0.24,     # low enough for the strap to read as a diagonal
+    "bag_height_ratio": 0.24,
     "bag_embed": 0.35,            # fraction of bag x-extent overlapping the flank
+    # The strap is a loop on the bag side: up the front flank beside the face,
+    # over the shoulder, down the back, both ends buried in the bag's top.
+    # Angles are measured around the body from the front (0) towards the bag
+    # side (90); the back half mirrors them (180 - angle).
     "strap_width": 0.05,          # across the band
-    "strap_thickness": 0.018,     # band thickness; the band follows the body surface
+    "strap_end_width": 0.024,     # tapered ends, so both fit inside the bag's depth
+    "strap_taper_length": 0.05,   # height above the bag top over which the band narrows
+    "strap_thickness": 0.018,     # band thickness
     "strap_lift": 0.006,          # gap between body surface and the band's inner side
-    "strap_shoulder_ratio": 0.58,   # below the eyes, so the band never crosses them
-    "strap_shoulder_offset": 0.97,   # fraction of the body radius at shoulder height
+    "strap_mid_ratio": 0.62,      # lower waypoint height (fraction of body_height)
+    "strap_mid_angle_deg": 48.0,  # keeps the front run clear of the eyes and the hand
+    "strap_upper_ratio": 0.72,
+    "strap_upper_angle_deg": 64.0,
+    "strap_shoulder_ratio": 0.82,  # crest over the shoulder, at 90 deg (the bag side)
+    "strap_bag_inset": 0.25,      # anchor inset from the bag's front/back face, fraction of bag depth
+    "strap_bury": 0.03,           # how far each end reaches down into the bag
     # Preview only (never exported to GLB).
     "preview_pitch_deg": 50.0,    # camera tilt below the horizon
     "preview_distance": 3.0,      # orthographic: affects clipping/placement, not scale
@@ -263,15 +274,15 @@ def derive_dimensions(config: dict) -> dict:
     dims["bag_top_z"] = bag_z + bag_z_size / 2.0
     dims["body_radius_at_bag"] = bag_r
 
-    # Strap: diagonal band from the opposite shoulder down to the bag's top,
-    # laid over the front of the chest. The endpoints are fixed here; the
-    # band itself follows the body surface in between (see strap_path()).
-    shoulder_z = _height_at(config, config["strap_shoulder_ratio"])
-    shoulder_r = body_radius_at(shoulder_z, config)
-    start_x = -bag_sign * shoulder_r * config["strap_shoulder_offset"]
-    dims["strap_start"] = (start_x, shoulder_z)
-    dims["strap_end"] = (dims["bag_center"][0], dims["bag_top_z"])
-    dims["body_radius_at_shoulder"] = shoulder_r
+    # Strap anchors: front and back of the bag's top, inset from the faces
+    # (see strap_path() for the loop between them).
+    bag_x, bag_y, _bag_z = dims["bag_center"]
+    inset = bag_y_size * config["strap_bag_inset"]
+    front_y = bag_y + FRONT_SIGN * (bag_y_size / 2.0 - inset)
+    back_y = bag_y - FRONT_SIGN * (bag_y_size / 2.0 - inset)
+    anchor_x = bag_x - bag_sign * bag_x_size * 0.25   # towards the body
+    dims["strap_anchor_front"] = (anchor_x, front_y, dims["bag_top_z"])
+    dims["strap_anchor_back"] = (anchor_x, back_y, dims["bag_top_z"])
 
     # Overall silhouette of the assembled figure.
     dims["total_height"] = max(dims["cap_tip_z"], body_top)
@@ -286,28 +297,79 @@ def derive_dimensions(config: dict) -> dict:
     return dims
 
 
-def strap_path(config: dict, dims: dict, samples: int = 24) -> list:
-    """Centre line of the strap's inner side, lying on the front of the body.
+def _body_slope_at(z: float, config: dict, h: float = 1e-3) -> float:
+    """d(radius)/dz of the body surface at height ``z``."""
+    return (body_radius_at(z + h, config) - body_radius_at(z - h, config)) / (2.0 * h)
 
-    Interpolates straight between the strap endpoints in X/Z and projects
-    each point forward onto the body's surface of revolution (plus
-    ``strap_lift``). Past the body's silhouette (the bag end) the point
-    stays at the silhouette plane instead of cutting through the body.
-    Returns ``(x, y, z, nx, ny)`` tuples; ``(nx, ny)`` is the horizontal
-    outward surface normal at that point.
+
+def _catmull_rom(p0, p1, p2, p3, t: float) -> tuple:
+    t2, t3 = t * t, t * t * t
+    return tuple(
+        0.5 * (2.0 * b + (c - a) * t + (2.0 * a - 5.0 * b + 4.0 * c - d) * t2
+               + (3.0 * b - a - 3.0 * c + d) * t3)
+        for a, b, c, d in zip(p0, p1, p2, p3)
+    )
+
+
+def strap_path(config: dict, dims: dict, samples_per_span: int = 10) -> list:
+    """Inner centre line of the strap loop, with the outward surface normal.
+
+    Waypoints are given as ``(angle, z, extra)``: ``angle`` around the body
+    from the front towards the bag side, ``z`` the height, ``extra`` the
+    distance outside the body surface (plus ``strap_lift``). The loop runs
+    bag front -> front flank -> over the shoulder at 90 deg -> back flank
+    -> bag back, and both ends continue ``strap_bury`` down into the bag.
+    Interpolation happens in that space with ``extra`` clamped to >= 0, so
+    no sample can lie inside the body.
+
+    Returns ``(x, y, z, nx, ny, nz)`` tuples.
     """
-    (start_x, start_z), (end_x, end_z) = dims["strap_start"], dims["strap_end"]
+    bag_sign = dims["bag_sign"]
     lift = config["strap_lift"]
+
+    def to_keys(point):
+        x, y, z = point
+        angle = math.atan2(bag_sign * x, FRONT_SIGN * y)
+        return (angle, z, math.hypot(x, y) - body_radius_at(z, config) - lift)
+
+    def surface(ratio_key, angle_key):
+        return (math.radians(config[angle_key]), _height_at(config, config[ratio_key]), 0.0)
+
+    bury = config["strap_bury"]
+    front = dims["strap_anchor_front"]
+    back = dims["strap_anchor_back"]
+    mid = surface("strap_mid_ratio", "strap_mid_angle_deg")
+    upper = surface("strap_upper_ratio", "strap_upper_angle_deg")
+    crest = (math.pi / 2.0, _height_at(config, config["strap_shoulder_ratio"]), 0.0)
+    keys = [
+        to_keys((front[0], front[1], front[2] - bury)),
+        to_keys(front),
+        mid,
+        upper,
+        crest,
+        (math.pi - upper[0], upper[1], 0.0),
+        (math.pi - mid[0], mid[1], 0.0),
+        to_keys(back),
+        to_keys((back[0], back[1], back[2] - bury)),
+    ]
+    padded = [keys[0]] + keys + [keys[-1]]
+
     points = []
-    for i in range(samples + 1):
-        s = i / samples
-        x = start_x + (end_x - start_x) * s
-        z = start_z + (end_z - start_z) * s
-        r = body_radius_at(z, config)
-        depth = math.sqrt(max(r * r - x * x, 0.0))
-        length = math.hypot(x, depth) or 1.0
-        nx, ny = x / length, FRONT_SIGN * depth / length
-        points.append((x + nx * lift, FRONT_SIGN * depth + ny * lift, z, nx, ny))
+    spans = len(keys) - 1
+    for span in range(spans):
+        p0, p1, p2, p3 = padded[span:span + 4]
+        last = span == spans - 1
+        for i in range(samples_per_span + (1 if last else 0)):
+            angle, z, extra = _catmull_rom(p0, p1, p2, p3, i / samples_per_span)
+            radius = body_radius_at(z, config) + lift + max(extra, 0.0)
+            dir_x, dir_y = bag_sign * math.sin(angle), FRONT_SIGN * math.cos(angle)
+            # Surface of revolution: normal ~ (radial direction, -dr/dz).
+            slope = _body_slope_at(z, config)
+            norm = math.sqrt(1.0 + slope * slope)
+            points.append((
+                dir_x * radius, dir_y * radius, z,
+                dir_x / norm, dir_y / norm, -slope / norm,
+            ))
     return points
 
 
@@ -566,23 +628,26 @@ def build_cap(config: dict, dims: dict):
 
 
 def build_strap(config: dict, dims: dict):
-    """Closed band following the chest surface along ``strap_path()``.
+    """Closed band following the body surface along ``strap_path()``.
 
-    First Blender run: the earlier straight box sank into the curved chest
-    and only its upper end poked out between the eyes.
+    Earlier versions: a straight box sank into the chest; a front-only band
+    across the belly read as a mouth from the 50 degree preview camera.
     """
-    half_width = config["strap_width"] / 2.0
     thickness = config["strap_thickness"]
+    taper_top = dims["bag_top_z"] + config["strap_taper_length"]
     path = strap_path(config, dims)
 
     bm = bmesh.new()
     sections = []
-    for i, (x, y, z, nx, ny) in enumerate(path):
+    for i, (x, y, z, nx, ny, nz) in enumerate(path):
         prev_pt = Vector(path[max(i - 1, 0)][:3])
         next_pt = Vector(path[min(i + 1, len(path) - 1)][:3])
         along = (next_pt - prev_pt).normalized()
-        outward = Vector((nx, ny, 0.0))
+        outward = Vector((nx, ny, nz))
         across = along.cross(outward).normalized()
+        taper = _smoothstep(dims["bag_top_z"], taper_top, z)
+        half_width = 0.5 * (config["strap_end_width"]
+                            + (config["strap_width"] - config["strap_end_width"]) * taper)
         inner = Vector((x, y, z))
         outer = inner + outward * thickness
         sections.append([
