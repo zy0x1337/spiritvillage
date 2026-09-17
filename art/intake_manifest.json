@@ -1,0 +1,114 @@
+{
+  "asset_source_env": "SV_ASSET_SOURCE",
+  "asset_source_default": "D:\\Mika\\assets",
+  "entries": [
+    {
+      "id": "crop_carrot_1",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_crops/2020-01/OBJ/Carrot_1.obj",
+      "target": "game/assets/crops/crop_carrot_1.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.2736,
+      "material_map": {},
+      "package": "Ultimate Crops",
+      "edition": "Nature Crops Pack - Jan 2020 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "crop_carrot_2",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_crops/2020-01/OBJ/Carrot_2.obj",
+      "target": "game/assets/crops/crop_carrot_2.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.2736,
+      "material_map": {},
+      "package": "Ultimate Crops",
+      "edition": "Nature Crops Pack - Jan 2020 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "crop_carrot_3",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_crops/2020-01/OBJ/Carrot_3.obj",
+      "target": "game/assets/crops/crop_carrot_3.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.2736,
+      "material_map": {},
+      "package": "Ultimate Crops",
+      "edition": "Nature Crops Pack - Jan 2020 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "crop_carrot_4",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_crops/2020-01/OBJ/Carrot_4.obj",
+      "target": "game/assets/crops/crop_carrot_4.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.2736,
+      "material_map": {},
+      "package": "Ultimate Crops",
+      "edition": "Nature Crops Pack - Jan 2020 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "crop_carrot_crop",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_crops/2020-01/OBJ/Carrot_Crop.obj",
+      "target": "game/assets/crops/crop_carrot_crop.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.2736,
+      "material_map": {},
+      "package": "Ultimate Crops",
+      "edition": "Nature Crops Pack - Jan 2020 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "tree_common_1",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/CommonTree_1.gltf",
+      "target": "game/assets/nature/tree_common_1.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 3.5,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "prop_barrel",
+      "source_root": "assets",
+      "source": "quaternius/fantasy_props_megakit/standard_2026-09-17/Exports/glTF/Barrel.gltf",
+      "target": "game/assets/props/prop_barrel.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.9,
+      "material_map": {},
+      "package": "Fantasy Props MegaKit",
+      "edition": "Standard (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "char_mushnub",
+      "source_root": "assets",
+      "source": "quaternius/ultimate_monsters/2026-09-17/Blob/glTF/Mushnub.gltf",
+      "target": "game/assets/characters/char_mushnub.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.8,
+      "material_map": {},
+      "package": "Ultimate Monsters",
+      "edition": "2026-09-17 (free)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "char_garden_wight",
+      "source_root": "repo",
+      "source": "build/characters/garden_wight/garden_wight.glb",
+      "target": "game/assets/characters/char_garden_wight.glb",
+      "rotate_y_deg": 0,
+      "scale": 1.0,
+      "material_map": {},
+      "package": "own generator art/generators/garden_wight.py",
+      "edition": "project",
+      "license": "project"
+    }
+  ]
+}
