@@ -252,9 +252,10 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – | ✅ `025546e` |
 | S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
 | S3 | Lineup und Player-Entscheidung | Claude · high | S2 | ✅ |
-| S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9b | offen |
+| S4a | Szenen-Assets: Baumauswahl, Gebäude-Intake, Textur-Import | DeepSeek · medium, Sichtprüfung Claude · low | S2, S3, S8b, S9 | offen |
+| S4b | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S4a, S9b | offen |
 | S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | ✅ |
-| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
+| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4b, S5 | offen |
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
 | S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |
 | S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | ✅ `f98c4f7`, Nacharbeit S9b |
@@ -318,7 +319,9 @@ als 9:20 wird der 8-m-Bereich seitlich beschnitten → auf Breite umstellen.
 - **Abnahme:** Renders unter `docs/previews/lineup_*.png`, begründete
   Entscheidung.
 
-### S4 – Garten-Szene (DeepSeek · medium)
+### S4 – Garten-Szene (DeepSeek · medium), geteilt in S4a/S4b
+
+S4a: Baumauswahl per Lineup, Häuschen und Ofen per Intake nach `game/assets/buildings/`, Import-Einstellung für eingebettete Texturen. S4b: Szenenaufbau, Wachstumslogik, Screenshot.
 
 - **Aufgabe:** In `game/scenes/garden.tscn` eine Lichtung aus Intake-Assets
   aufbauen: Wege, 3 × 3-Beet, 3 Bäume, Häuschen (S8), Steinofen (S9), Player
