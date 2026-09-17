@@ -88,9 +88,9 @@ rundliche, nichtmenschliche Gartenwesen“ (AGENTS.md). C wurde nicht
 heruntergeladen und bleibt verworfen. B wird nicht weiterverfolgt;
 `char_mushnub` bleibt nur als Vergleichsasset im Repo.
 
-Befunde für S5: Die Gartenwicht-Farben stehen noch als lineare Werte in der
-`CONFIG` und wirken blass (Kappe mintgrün statt Blattgrün); wie beim Häuschen
-auf sRGB umstellen. Mit 9 190 Dreiecken knapp unter dem Budget.
+S5: Farben auf sRGB umgestellt und an `mockup.png` angeglichen (Kappe
+Blattgrün statt Mintgrün, Tasche/Gurt Braun statt Khaki); Form, Node-Namen und
+Höhe unverändert (GLB-Positionen bitgleich), 9 190 Dreiecke.
 
 **Spirits** ✅ – gemeinsame Gestaltungsvorlage, wenige Grundkörper:
 
@@ -104,6 +104,18 @@ Es gibt kein passendes fertiges CC0-Set. Deshalb gibt es einen gemeinsamen,
 per Skript erzeugten Grundkörper (Weiterentwicklung der Gartenwicht-Geometrie);
 Varianten entstehen über `CONFIG` (Farben, Anbauteile, Proportionen). **Zuerst
 ein überzeugendes Waldwesen**; Feuer und Wasser erst nach dessen Abnahme.
+
+✅ S5: Grundkörper `art/generators/creature_base.py` (Körperprofil, Füße,
+Hände, Augen mit Glanzpunkt, Hierarchie/Pivots, Prüfungen, Export, `--views`);
+`garden_wight.py` und `forest_spirit.py` sind Konfiguration plus eigene Teile.
+**Waldwesen** `char_forest_spirit`: 0,65 m, 4 648 Dreiecke, moosgrüner
+Eikörper, Spross (`Sprout` → `Leaf.L`/`Leaf.R`), flache Knopfaugen,
+nach vorn gerichtete Stummelhände (Tragehaltung). Für S6 ohne Skelett:
+`Body` (Pivot am Bodenkontakt: Neigen, Stauchen) trägt Augen, Hände und
+Spross; Füße direkt unter der Wurzel (kurze Schritte); Blätter drehen um die
+Stielspitze. Alle Node-Rotationen 0, Pivots überstehen den Intake. Befund:
+Hervorstehende Augen oberhalb ~0,6 Körperhöhe lugen aus 50° von hinten über
+den Scheitel – daher flache, nach oben gekippte Augen auf 0,58.
 
 ## 4a. Gebäude und Arbeitsstationen ✅
 
@@ -139,6 +151,7 @@ Fass ≈ ⅔ Figur.
 | Asset | Höhe | Verhältnis zum Player | Stand |
 |---|---|---|---|
 | `char_garden_wight` | 0,90 m | 1 | Referenz |
+| `char_forest_spirit` | 0,65 m | 0,72 | S5; Helfer kleiner als Player, 24 px bei S1-Kamera (Player 32 px) |
 | `crop_carrot_4` (reif) | 0,55 m | 0,6 | im Manifest (Skalierung 0,43 für alle Karottenstufen; vorher 0,35 m) |
 | `crop_carrot_1`…`_3` | 0,13–0,22 m | 0,15–0,25 | Keimlinge; auf Erdbeet prüfen (S4) |
 | `prop_barrel` | 0,55 m | 0,6 | im Manifest (vorher 0,90 m, so groß wie die Figur) |
@@ -240,7 +253,7 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
 | S3 | Lineup und Player-Entscheidung | Claude · high | S2 | ✅ |
 | S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9 | offen |
-| S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | offen |
+| S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | ✅ |
 | S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
 | S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |

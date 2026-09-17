@@ -12,14 +12,32 @@ gelangen nur über den Intake mit Herkunftsnachweis ins Spiel.
 - **[BLENDER_WORKFLOW.md](BLENDER_WORKFLOW.md)** – Arbeitsweise für
   Generatoren (Daten-API, visuelle Feedbackschleife, Prüfungen) und Blender MCP.
 
+## creature_base.py — gemeinsamer Wesen-Grundkörper
+
+Gemeinsamer Teil aller Wesen-Generatoren (seit S5): Körperprofil (Kugel mit
+radialem Profil: `body_taper`, `body_taper_range`, `body_bottom_fullness`),
+Füße, Hände (optional `hand_pitch_deg`, `hand_pivot_ratio`), Augen mit
+Glanzpunkt (optional flach: `eye_depth_ratio`, `eye_tilt_deg`), Node-
+Hierarchie mit Pivots (`SPEC["parents"]`, `body_pivot`, `bake_rotations`),
+Prüfungen, GLB-Export und `--views`. Ein Wesen-Modul liefert `CONFIG`
+(Farben als **sRGB** mit Materialnamen), eigene Teile und `SPEC` an
+`creature_base.run()`.
+
+Prüfungen bei jedem Lauf: Höhe und Bodenkontakt **über Vertices**,
+Höhenbereich, Dreiecksbudget, Durchdringungen (`separate_parts`, BVH),
+GLB-Inhalt (Node-Skalierung, Kameras/Lichter, Gesicht bei glTF +Z). Schlägt
+eine fehl, schreibt der Lauf trotzdem alle Ausgaben und endet mit **Exit 1**.
+Die Vorschaukamera rahmt die gemessenen Vertex-Grenzen.
+
 ## garden_wight.py — Gartenwicht (Player-Charakter)
 
-Erste statische Version des nichtmenschlichen Spielercharakters: ein
-gedrungener, birnenförmiger Gartenwicht.
+Statischer, nichtmenschlicher Spielercharakter: ein gedrungener,
+birnenförmiger Gartenwicht. Kappe, Beutel, Klappe und Riemen stehen in
+`garden_wight.py`, alles andere in `creature_base.py`.
 
 ### Konventionen
 
-- **Z-up**, beide Fußsohlen exakt auf `z = 0`, Gesamthöhe ca. 1 Blender-Einheit.
+- **Z-up**, beide Fußsohlen exakt auf `z = 0`, Höhe 0,90 m (über Vertices).
 - **Blickrichtung −Y** in Blender. Blenders Frontansicht (Numpad 1) schaut
   von −Y nach +Y und zeigt das Gesicht. Augen, Riemen und Vorschaukamera
   verwenden dieselbe Vorderseite (`FRONT_SIGN`).
@@ -28,7 +46,6 @@ gedrungener, birnenförmiger Gartenwicht.
   und entspricht in Godot `Vector3.MODEL_FRONT` (+Z), **nicht** der
   −Z-Vorwärtsrichtung von `Node3D`/`look_at()`. In Godot also
   `look_at(ziel, Vector3.UP, true)` verwenden oder das Modell um 180° drehen.
-  Der Godot-Import selbst ist noch nicht ausgeführt.
 - **`.L`/`.R`** folgen Blenders Spiegelkonvention: linke Körperseite der
   Figur = +X.
 - **Alle `CONFIG`-Maße sind volle Ausdehnungen** (Durchmesser, Länge,
@@ -90,7 +107,9 @@ gedrungener, birnenförmiger Gartenwicht.
   Stützpunkte (`180° − Winkel`). `strap_mid_angle_deg` hält den vorderen Lauf
   zwischen Augen und Hand. Der Arm ragt durch die Schlaufe.
 - **Materialien**: flache, matte Principled-BSDF-Materialien (hohe Rauheit,
-  kein Metallic), keine Texturen.
+  kein Metallic), keine Texturen. Farben stehen als sRGB in der `CONFIG`
+  und werden linearisiert (vor S5 wurden lineare Werte eingetragen, die blass
+  wirkten).
 - **Mesh-Auflösung und Schattierung**: `body_segments`, `part_segments`,
   `cap_segments`, `strap_samples_per_span`; zusammen ca. 9 200 Dreiecke.
   Alles glatt schattiert; Beutel, Klappe, Riemen und Krempe behalten Kanten
@@ -138,10 +157,9 @@ blender --background --factory-startup --python-exit-code 1 --python \
   (Vorschau auf die Figur zugeschnitten, Figur 96 bzw. 48 px hoch). Gibt die
   Figurenhöhe im Vorschaubild aus.
 
-Jeder Lauf prüft außerdem Durchdringungen zwischen Teilen, die sich nicht
-berühren dürfen (`SEPARATE_PARTS`, BVH-Overlap der Meshes), und meldet
-`WARNING intersection: …` sowie eine Zusammenfassung. Der Lauf bricht dabei
-nicht ab.
+Jeder Lauf führt die Prüfungen aus `creature_base.py` aus (u. a.
+`SEPARATE_PARTS`, `WARNING intersection: …`); bei einem Fehler endet er
+nach dem Schreiben aller Ausgaben mit Exit 1.
 
 Erzeugte Dateien:
 
@@ -158,9 +176,9 @@ Erzeugte Dateien:
 
 ### Vorschaukamera und Renderweg
 
-Die Kamera wird aus den abgeleiteten Figurmaßen berechnet, nicht von Hand
-gesetzt: Sie steht auf der Vorderseite (−Y), blickt `preview_pitch_deg`
-(50°) unter dem Horizont genau auf die Figurmitte, und `ortho_scale` ergibt
+Die Kamera wird aus den gemessenen Vertex-Grenzen der gebauten Figur
+berechnet, nicht von Hand gesetzt: Sie steht auf der Vorderseite (−Y), blickt
+`preview_pitch_deg` (50°) unter dem Horizont genau auf die Mitte der Grenzen, und `ortho_scale` ergibt
 sich aus der projizierten Höhe und Breite der Figur plus `preview_margin`.
 Höhen- und Breitenbedarf werden dabei gegen das Hochformat-Seitenverhältnis
 geprüft, damit die komplette Figur im Bild bleibt.
@@ -177,41 +195,23 @@ Automatik.
 ### Stand und Prüfungen
 
 **Bildhöhe vs. Figurenhöhe:** Die Vorschau ist 1024 px hoch, die Figur nimmt
-darin 553 px ein (vom Generator ausgegeben). Kleinprüfungen beziehen sich auf
+darin 564 px ein (vom Generator ausgegeben). Kleinprüfungen beziehen sich auf
 die **Figurenhöhe**.
 
-Ausgeführt mit dem Stand dieses Commits (Blender 5.2.1 LTS, Windows,
-Nutzer-PC; Protokoll lokal unter `build/characters/garden_wight/run.log`):
+S5 (Blender 5.2.1 LTS, Windows, Nutzer-PC; Protokoll lokal unter
+`build/characters/garden_wight/run.log`):
 
-- Generator mit `--views`: Exit 0; `.blend`, `.glb`, Vorschau und vier
-  Prüfbilder erzeugt; gebaute Höhe 0,949 laut Bounding-Boxen der Teile (überschätzt bei gedrehten
-  Teilen; über Vertices gemessen 0,90 m, siehe `art/tools/lineup.py`), Sohlen auf z = 0;
-  Durchdringungsprüfung 0 von 15 Paaren.
-- Alle Bilder angesehen (Kopien unter `docs/previews/`):
-  - Vorschau `garden_wight.png`: ganze Figur, Augen mit Glanzpunkt frei,
-    Krempe mit Überhang, Gurt links neben dem Gesicht, kein Mund-Bogen,
-    Füße sichtbar.
-  - Rückansicht `garden_wight_back.png` und Beutelseite
-    `garden_wight_side_bag.png`: durchgehende Gurtschlaufe über die Schulter,
-    Enden in Klappe und Beutel, Hand frei vom Beutel, kein sichtbares
-    Versinken.
-  - `garden_wight_fig96px.png` (Figur 96 px): Augen samt Glanzpunkt, Kappe
-    und Gurt erkennbar. `garden_wight_fig48px.png` (Figur 48 px): Augen und
-    Kappe lesbar, der Gurt nur als schmaler Ockerstreifen.
-- GLB-JSON: 14 Nodes, 13 Meshes, 7 Materialien, ca. 9 200 Dreiecke, keine
-  Kameras/Lichter/Boden, keine Node-Skalierung; Augen bei glTF z = +0,255
-  (Gesicht vorne +Z).
-- Rechnerisch (Python ohne Blender): Mindestabstand der Riemen-Innenseite zur
-  Körperoberfläche = `strap_lift`; alle Riemenabschnitte unterhalb der
-  Beuteloberkante liegen samt Endbreite und Dicke im Beutelquader.
-- Zwei Exporte derselben Revision verglichen: JSON und alle Positionen und
-  Normalen identisch; bei den UV-Kugel-Meshes (Körper, Augen, Glanzpunkte,
-  Füße, Hände)
-  unterscheidet sich nur die **Reihenfolge** der Dreiecke, die Dreiecksmengen
-  sind gleich. Vor-Triangulierung per `bmesh` behebt das nicht. Die Ursache
-  liegt vermutlich im glTF-Exporter; keine sichtbaren Auswirkungen.
-
-Ausstehend (NOT RUN): Godot-Import, andere Blender-Versionen.
+- `--views`: Exit 0, Höhe über Vertices 0,901 m, Bodenkontakt 0,0000,
+  9 190 Dreiecke (Budget 10 000), 0 von 15 Paaren durchdringen sich.
+- GLB: 14 Nodes (flach unter `GardenWight_Root`), 13 Meshes, 7 Materialien,
+  keine Kameras/Lichter, keine Node-Skalierung, `Eye.L` bei glTF z = +0,255.
+- Gegen den Stand vor S5 verglichen: Node-Transformationen und alle
+  Vertex-Positionen bitgleich; nur die Materialfarben haben sich geändert.
+- Bilder angesehen (`docs/previews/garden_wight*.png`). **Vorher:** Kappe
+  salbei-/mintgrün, Tasche blass khaki, Gurt sandfarben (lineare Werte als
+  sRGB missverstanden). **Nachher:** Kappe Blattgrün, Tasche warmes Braun,
+  Gurt Dunkelbraun, Überwurf Creme; im Lineup-Licht wie in `mockup.png`.
+- Intake + `--verify` PASS, Godot-Import ohne Fehler (S5).
 
 Offene visuelle Befunde:
 
@@ -219,6 +219,40 @@ Offene visuelle Befunde:
 2. **Hände** wirken aus der 50°-Kamera noch leicht wie seitliche Ohren.
 3. **Knick am Beutel:** Der Gurt biegt über der Klappe deutlich in den
    senkrechten Lauf.
+4. Unter dem grauen Vorschaulicht wirkt Creme leicht grau; im Lineup mit
+   Spiellicht nicht.
+
+## forest_spirit.py — Waldwesen (Helfer, `char_forest_spirit`)
+
+Gedrungenes, moosgrünes Wesen mit zweiblättrigem Spross (Referenz:
+Waldwesen links in `mockup.png`). Aufruf wie beim Gartenwicht, Ausgabe unter
+`build/characters/forest_spirit/` (`forest_spirit.glb`, `.blend`, Vorschau,
+`_back`, `_side`, `_fig96px`, `_fig48px`).
+
+- **Körper:** Eiform, unten voller (`body_bottom_fullness` 0,75), oben leicht
+  verjüngt (`body_taper` 0,08); 0,42 m breit.
+- **Spross:** `Sprout` (Stiel aus dem Scheitel) mit `Leaf.L`/`Leaf.R`:
+  geschlossene Blattflächen, an beiden Enden spitz, längs nach oben
+  gewölbt, quer gemuldet, 55° nach außen gespreizt. Blattbasen liegen knapp
+  unter der Stielspitze (keine Lücke in der Seitenansicht).
+- **Augen:** flache Knöpfe (`eye_depth_ratio` 0,45), um 25° nach oben
+  gekippt, auf 0,58 Körperhöhe. Kugelaugen höher am Kopf lugten in der
+  Rückansicht (50°) über den Scheitel.
+- **Hände:** runde Stummel, 80° nach vorn gerichtet (von oben keine
+  „Flossen“); **Füße** dunkelbraun, Spitzen vorn sichtbar.
+- **Animation ohne Skelett (S6):** `ForestSpirit_Root` → `Body` (Pivot am
+  tiefsten Körperpunkt) und `Foot.L/R`; `Body` → `Eye.*` (→ `EyeShine.*`),
+  `Hand.*` (Pivot nahe dem Ansatz), `Sprout` (Pivot am Stielfuß) → `Leaf.*`
+  (Pivot an der Stielspitze). Alle Node-Rotationen 0; im Spiel-GLB geprüft.
+
+Stand S5: `--views` Exit 0, Höhe 0,653 m, Bodenkontakt 0, 4 648 Dreiecke
+(Budget 6 000), 0 von 10 Paaren; GLB 13 Nodes, 12 Meshes, 6 Materialien,
+keine Node-Skalierung, Gesicht +Z. Alle Bilder angesehen
+(`docs/previews/forest_spirit*.png`): bei 48 px Figurenhöhe grünes Wesen mit
+Spross und Augen lesbar. Iterationen: Spross vergrößert (war bei 48 px
+unsichtbar), Hände nach vorn (wirkten wie Flossen), Augen abgeflacht und
+gekippt (Rückansicht). Offen: Gesicht sitzt aus 50° eher tief; kein Mund,
+keine Moosstruktur.
 
 ## Gebäude
 
