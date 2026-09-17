@@ -12,7 +12,7 @@ der genannten Session entschieden). Generator-Arbeitsweise und Blender MCP:
 |---|---|
 | Perspektive | Orthografische 3D-Kamera schräg von oben, Ausgangswert 50° nach unten, Hochformat |
 | Bildaufbau | Eine überschaubare Lichtung/Terrasse, deutliche Wege, große Arbeitsstationen |
-| Formen | Runde Baumkronen, kräftige Pilze, dicke Stämme, einfache Häuser |
+| Formen | Runde Baumkronen, kräftige Pilze, dicke Stämme, runde Häuschen mit Kuppeldach (siehe 4a) |
 | Materialien | Matt, wenig Oberflächendetail, zurückhaltende Texturen |
 | Farben | Moosgrün, Creme, warmes Holzbraun, Terrakotta; Blau und Orange nur als Akzent |
 | Licht | Warmes Tageslicht, weiche Schatten, helle Schattenseiten |
@@ -40,14 +40,18 @@ gemalte Oberfläche.
 
 ## 3. Assetquellen und Lizenzen
 
-| Einsatz | Paket (Quaternius, laut Anbieter CC0) | Rolle |
+Rohpakete liegen seit 2026-09-17 unter `D:\Mika\assets\quaternius\` (S0),
+jeweils mit Lizenzdatei und `PROVENANCE.txt` (ZIP-Name, SHA-256, Datum).
+
+| Einsatz | Paket (Quaternius, CC0 1.0 laut Lizenzdatei) · Ordner | Rolle |
 |---|---|---|
-| Bäume, Büsche, Felsen | Stylized Nature MegaKit | Hauptbasis Umgebung ✅ |
-| Feldfrüchte | Ultimate Crops (102 Modelle, 5 Wachstumsstufen) | Hauptbasis Beete ✅ |
-| Werkzeuge, Kisten, Einrichtung | Fantasy Props MegaKit | wenige gezielt gewählte Teile ✅ |
-| Hofgebäude | Farm Buildings | erster Hof ✅; bodenständiger als die Pilzhaus-Referenz |
-| Naturwesen | Ultimate Monsters | nur einzelne Pilzwesen als Vergleichskandidat |
-| Menschlicher Player | Ultimate Modular Men/Women | nur falls Variante C (siehe 4) |
+| Bäume, Büsche, Farn, Blumen, Gras, Pilze, Felsen, Kiesel, Steinpfade | Stylized Nature MegaKit, Standard (68/116 Modelle) · `stylized_nature_megakit\standard_2026-09-17\` | Hauptbasis Umgebung ✅; Steinpfade auch für Stufen. Anbieter-Shader nur in Source-Edition |
+| Feldfrüchte (u. a. Karotte, Kürbis, Salat, Rübe) | Ultimate Crops, Download „Nature Crops Pack – Jan 2020“ · `ultimate_crops\2020-01\` | Hauptbasis Beete ✅ |
+| Kleinteile: Fass, Holzeimer, Kisten, Gemüsekisten, Topf, Kessel, Wandlaterne, Bank, Hocker, Werkbank, Axt | Fantasy Props MegaKit, Standard · `fantasy_props_megakit\standard_2026-09-17\` | wenige gezielt gewählte Teile ✅; Stil realistischer (Trim-Texturen mit Normal/ORM) → beim Intake auf matte Palettenfarben abbilden |
+| Gebäude, Arbeitsstationen | – | **eigene Generatoren** ✅ (siehe 4a) |
+| Naturwesen | Ultimate Monsters · `ultimate_monsters\2026-09-17\` | nur einzelne Pilzwesen als Vergleichskandidat |
+| – | Farm Buildings (Sept 2018) · `farm_buildings\2018-09\` | **nicht verwendet** ❌: rote US-Scheunen, Silos, Windräder, flacher Low-Poly-Stil – widerspricht der Referenz; höchstens Platzhalter |
+| Menschlicher Player | Ultimate Modular Men/Women (nicht heruntergeladen) | nur falls Variante C (siehe 4) |
 
 Regeln:
 
@@ -57,11 +61,11 @@ Regeln:
 - **Herkunftsnachweis** für jedes im Spiel verwendete Asset in
   `art/ASSETS.md`: Spieldatei, Quellpaket, Edition/Version, Quelldatei,
   Lizenz, Änderungen (Skalierung, Drehung, Materialtausch).
-- ⚠ **Rohdownloads außerhalb von Git** – Empfehlung: `D:\Mika\assets\<anbieter>\<paket>\<version>\`,
-  im Intake-Manifest über eine Umgebungsvariable `SV_ASSET_SOURCE`
-  referenziert. Ins Repo kommen nur die verarbeiteten GLBs, die das Spiel
-  nutzt. Grund: Pakete sind groß; Git soll Spiel und Pipeline versionieren,
-  nicht Bibliotheken.
+- ✅ **Rohdownloads außerhalb von Git** unter `D:\Mika\assets\<anbieter>\<paket>\<version>\`,
+  im Intake-Manifest über die Umgebungsvariable `SV_ASSET_SOURCE`
+  (= `D:\Mika\assets`) referenziert. Ins Repo kommen nur die verarbeiteten
+  GLBs, die das Spiel nutzt. Grund: Die fünf Pakete sind entpackt ca. 560 MB;
+  Git soll Spiel und Pipeline versionieren, nicht Bibliotheken.
 - Keine Assets über die Online-Dienste des MCP-Addons und keine KI-Mesh-Generierung
   ohne eigene Entscheidung.
 
@@ -93,6 +97,31 @@ Es gibt kein passendes fertiges CC0-Set. Deshalb gibt es einen gemeinsamen,
 per Skript erzeugten Grundkörper (Weiterentwicklung der Gartenwicht-Geometrie);
 Varianten entstehen über `CONFIG` (Farben, Anbauteile, Proportionen). **Zuerst
 ein überzeugendes Waldwesen**; Feuer und Wasser erst nach dessen Abnahme.
+
+## 4a. Gebäude und Arbeitsstationen ✅
+
+Kein heruntergeladenes Paket trifft die Referenz. Gebäude und Stationen
+entstehen deshalb **per Blender-Skript** wie der Gartenwicht (Arbeitsweise
+[BLENDER_WORKFLOW.md](BLENDER_WORKFLOW.md), Budget ≤ 8 000 Dreiecke je Haus).
+Formen sind einfach und rund, das passt zur Figurengeometrie.
+
+| Objekt (Referenz `mockup.png`) | Merkmale | Priorität |
+|---|---|---|
+| Wurzelheim-Häuschen `bldg_cottage` | runder Baukörper aus cremeweißem Putz, gewölbtes Dach aus Terrakotta-Schindeln mit Überstand, runde Holztür mit Bogen und Ring, Rundfenster mit Sprossenkreuz, Wandlaterne, Steinstufen | 1 (Meilenstein 1) |
+| Steinofen mit Kessel `bldg_oven` | gemauerter runder Sockel mit Feueröffnung, Kessel oben | 2 (Station Meilenstein 1) |
+| Brunnen `bldg_well` | runder Steinring, Wasserfläche, hölzerne Kurbel | 3 |
+| Holzunterstand `bldg_woodshed` | Pultdach auf Pfosten, Holzstapel | 4 |
+| Zaun, Laternenpfahl, Blatt-Schild `prop_fence`, `prop_lamppost`, `prop_sign` | grobes Holz, Pfosten mit Querlatten | 4 |
+| Riesenbaum mit Wurzeln | nur als Stamm-/Wurzelstück am Szenenrand andeuten | später |
+
+- Bewegliche oder austauschbare Teile als eigene Nodes (z. B. `Door`,
+  `Lantern`, `Smoke` als Ankerpunkt), damit Godot sie animieren kann.
+- Vorhandene Kleinteile (Fass, Eimer, Kessel …) aus Fantasy Props bevorzugt
+  über den Intake statt neu erzeugen.
+- Der gemalte Render-Look der Referenz (weiches globales Licht,
+  Tiefenunschärfe, Moosdetails) ist auf dem Handy nicht 1:1 erreichbar;
+  angenähert wird er über warmes Licht, Farbverläufe und angedeutete
+  Verschattung in den Materialien.
 
 ## 5. Animation ✅
 
@@ -155,9 +184,9 @@ und Exporte laufen über Skripte.
 Geometrie-, Textur- und Bildschirmauflösung werden getrennt betrachtet; es gibt
 keine einheitliche „Modellauflösung“.
 
-## 8. Projektstruktur ⚠
+## 8. Projektstruktur ✅
 
-Empfehlung: Godot-Projekt unter **`game/`** (Godot 4.6). `art/`, `build/`
+Godot-Projekt unter **`game/`** (Godot 4.6, angelegt in S1). `art/`, `build/`
 und `docs/` liegen damit außerhalb von `res://` und werden nicht importiert.
 Verarbeitete Assets: `game/assets/{characters,crops,nature,props,buildings}/`.
 
@@ -170,47 +199,41 @@ der Referenz erreichen und welche Player-Variante trägt.
 Sessions sind einzeln ausführbar. **Ausführung:** *Claude* = Claude Code;
 *DeepSeek* = DeepSeek V4.1 Flash in OpenCode (gleicher Repo-Zugriff). Pro
 Datei ein Schreiber; parallele Sessions nur bei getrennten Schreibbereichen.
-Alle Sessions: Branch `claude/wurzelheim-env-audit-tmlfav`, Handoff nach
-AGENTS.md, `docs/STATUS.md` aktualisieren.
+Alle Sessions: Branch `claude/wurzelheim-env-audit-tmlfav`, Handoff als
+Chat-Antwort im Format von AGENTS.md (keine Handoff-Datei),
+`docs/STATUS.md` aktualisieren. Vor dem Commit `git pull --ff-only`; laufen
+Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
+überschrieben.
 
-| # | Session | Ausführung | Abhängig von |
-|---|---|---|---|
-| S0 | Pakete herunterladen und ablegen | Nutzer, manuell | – |
-| S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – |
-| S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 |
-| S3 | Lineup und Player-Entscheidung | Claude · high | S2 |
-| S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S1, S2, S3 |
-| S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 |
-| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 |
-| S7 | Icon-Renderer | DeepSeek · low | S2 |
+| # | Session | Ausführung | Abhängig von | Stand |
+|---|---|---|---|---|
+| S0 | Pakete herunterladen und ablegen | Nutzer, manuell | – | ✅ 2026-09-17 |
+| S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – | ✅ `025546e` |
+| S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | offen |
+| S3 | Lineup und Player-Entscheidung | Claude · high | S2 | offen |
+| S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9 | offen |
+| S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | offen |
+| S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
+| S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
+| S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – (parallel zu S2 möglich) | offen |
+| S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | offen |
 
-### S0 – Pakete ablegen (Nutzer)
+### S0 – Pakete ablegen (Nutzer) ✅
 
-Herunterladen: Stylized Nature MegaKit, Ultimate Crops, Fantasy Props MegaKit,
-Farm Buildings, Ultimate Monsters (von quaternius.com, jeweils die kostenlose
-Edition, sofern nicht anders entschieden). Entpacken nach
-`D:\Mika\assets\quaternius\<paket>\<version-oder-datum>\`, Lizenzdatei bzw.
-Screenshot der Lizenzangabe daneben. Umgebungsvariable
-`SV_ASSET_SOURCE=D:\Mika\assets` setzen. Ergebnis: Liste der Ordner mit
-Edition und Datum an die nächste Session geben.
+Erledigt: fünf Pakete unter `D:\Mika\assets\quaternius\` (Ordner und Editionen
+in Abschnitt 3), `SV_ASSET_SOURCE=D:\Mika\assets` als Benutzervariable
+gesetzt (gilt in neu gestarteten Terminals).
 
-### S1 – Godot-Grundgerüst (DeepSeek · medium)
+### S1 – Godot-Grundgerüst (DeepSeek · medium) ✅
 
-- **Ist:** Kein Godot-Projekt im Repo. Godot 4.6:
-  `D:\Mika\tools\godot\Godot_v4.6-stable_win64.exe`. `.gitignore` ignoriert
-  `/build/`. Konventionen: Abschnitt 2 und 7.
-- **Aufgabe:** `game/project.godot` (Name „Spirit Village“, Hochformat
-  360 × 800, Stretch-Modus `canvas_items`, Aspekt `expand`, Renderer Mobile),
-  Ordner `game/assets/{characters,crops,nature,props,buildings}/`,
-  `game/scenes/`, `game/scripts/`. `game/.godot/` in `.gitignore`;
-  `*.import`-Dateien werden nach Godot-Konvention versioniert. Leere Hauptszene
-  `game/scenes/garden.tscn` mit orthografischer `Camera3D` (50° nach unten),
-  `DirectionalLight3D` (warm, Schatten an) und `WorldEnvironment` (helle,
-  warme Umgebung).
-- **Abnahme:** `Godot --headless --path game --import` endet ohne Fehler;
-  `Godot --headless --path game --quit` startet die Hauptszene ohne Fehler.
-  Ausgaben als Beleg.
-- **Schreibbereich:** `game/`, `.gitignore`, `docs/STATUS.md`.
+Erledigt in `025546e`: `game/project.godot` (Mobile, 360 × 800,
+`canvas_items`/`expand`, Hauptszene `res://scenes/garden.tscn`),
+Asset-Ordner, `game/.godot/` ignoriert. `garden.tscn`: orthografische Kamera
+(50°, `size` 18, Abstand 12 m zum Ursprung), warmes Richtungslicht mit
+Schatten, `WorldEnvironment`, 8 × 8-m-Boden. Geprüft: `--import` und
+`--quit-after 5` (Godot 4.6 verlangt eine Zahl) ohne Fehler.
+Befund für S4: Die Kamera nutzt `keep_aspect` = Höhe; auf schmaleren Handys
+als 9:20 wird der 8-m-Bereich seitlich beschnitten → auf Breite umstellen.
 
 ### S2 – Intake (DeepSeek · medium)
 
@@ -248,8 +271,10 @@ Edition und Datum an die nächste Session geben.
 ### S4 – Garten-Szene (DeepSeek · medium)
 
 - **Aufgabe:** In `game/scenes/garden.tscn` eine Lichtung aus Intake-Assets
-  aufbauen: Wege, 3 × 3-Beet, 3 Bäume, 1 Haus, 1 Station, Player an fester
-  Position, 1 Helfer. Pflanzen wechseln per Skript
+  aufbauen: Wege, 3 × 3-Beet, 3 Bäume, Häuschen (S8), Steinofen (S9), Player
+  an fester Position, 1 Helfer. Generierte GLBs aus `build/` kommen als
+  Manifest-Einträge ohne Drittquelle über den Intake nach `game/assets/`.
+  Kamera auf `keep_aspect` = Breite umstellen (Befund S1). Pflanzen wechseln per Skript
   (`game/scripts/crop_plot.gd`) durch 5 Wachstumsstufen. Post-Import-Skript
   `game/scripts/import/shared_materials.gd` gemäß Abschnitt 6.4.
 - **Abnahme:** Headless-Start ohne Fehler; Screenshot im Hochformat
@@ -274,10 +299,56 @@ Teil-Nodes (Abschnitt 5); Aufnahme als kurze Bildfolge für die Sichtprüfung.
 Hintergrund, feste 3/4-Kamera, gleiches Licht; Ausgabe
 `game/assets/icons/`.
 
+### S8 – Gebäude-Generator: Wurzelheim-Häuschen (Claude · high)
+
+- **Ist:** Kein Gebäude im Repo. Vorbild für Aufbau und Prüfungen:
+  `art/generators/garden_wight.py` (`CONFIG`-Block, bpy-freie
+  Maßableitung, `bmesh`-Teile, `SEPARATE_PARTS` + BVH-Durchdringungsprüfung,
+  `export_glb`, `--render`/`--views` mit Figurenhöhen-Zuschnitten).
+  Arbeitsweise und Blender-Aufruf: `art/BLENDER_WORKFLOW.md`. Konventionen:
+  Abschnitt 2; Budget ≤ 8 000 Dreiecke; Merkmale: Abschnitt 4a, Referenz
+  `mockup.png` (oben links, ungetrackte Datei im Arbeitsverzeichnis).
+  Gartenwicht-GLB zum Größenvergleich:
+  `build/characters/garden_wight/garden_wight.glb` (0,95 m hoch; bei Bedarf
+  neu erzeugen).
+- **Aufgabe:** Neuer Generator `art/generators/bldg_cottage.py` (keine
+  Änderung an `garden_wight.py`; gemeinsames Modul erst in S5). Startwerte,
+  in der Session visuell festzulegen: Grundkreis Ø ca. 2,6 m, Wandhöhe ca.
+  1,6 m, Kuppeldach mit Überstand und Schindelringen, Gesamthöhe ca. 3 m,
+  Tür ca. 0,8 × 1,3 m zur +Z-Seite, Rundfenster seitlich vorn, Wandlaterne,
+  zwei Steinstufen. Teil-Nodes u. a. `Walls`, `Roof`, `Door`, `Window`,
+  `Lantern`, `Steps`. Ausgabe `build/buildings/bldg_cottage/`.
+- **Abnahme:** Blender-Lauf Exit 0; Renders Vorschau 50°, Rückseite,
+  Seitenansicht sowie ein Größenvergleich neben dem Gartenwicht in
+  Spielkamera-Größe (Kamera S1: 18 m Bildhöhe auf 800 px) unter
+  `docs/previews/bldg_cottage*.png`, jedes Bild angesehen; keine
+  Durchdringungen zwischen getrennten Teilen; ≤ 8 000 Dreiecke;
+  Bodenkontakt y = 0; keine Node-Skalierung; Tür zeigt nach +Z.
+- **Schreibbereich:** `art/generators/bldg_cottage.py`,
+  `docs/previews/bldg_cottage*.png`, `art/README.md` (Abschnitt Gebäude),
+  `docs/STATUS.md`.
+
+### S9 – Station: Steinofen mit Kessel (DeepSeek · medium)
+
+- **Ist:** `art/generators/bldg_cottage.py` aus S8 als Vorlage (Aufbau,
+  Prüfungen, Palette). Merkmale Abschnitt 4a.
+- **Aufgabe:** `art/generators/bldg_oven.py`: runder gemauerter Sockel
+  (Ø ca. 0,9 m, Höhe ca. 0,7 m) mit Feueröffnung nach +Z, Kessel oben,
+  Teil-Nodes `Base`, `FireOpening`, `Cauldron`, `SteamAnchor` (leerer Node
+  als Ankerpunkt für Dampf). Budget ≤ 4 000 Dreiecke. Ausgabe
+  `build/buildings/bldg_oven/`.
+- **Abnahme:** wie S8 (Renders `docs/previews/bldg_oven*.png` mit
+  Größenvergleich zum Gartenwicht); danach Sichtprüfung durch Claude.
+- **Schreibbereich:** `art/generators/bldg_oven.py`,
+  `docs/previews/bldg_oven*.png`, `docs/STATUS.md`.
+
 ## 10. Offene Entscheidungen
 
 1. Player-Variante A/B/C (S3; Empfehlung A).
-2. Rohdownloads außerhalb von Git unter `D:\Mika\assets` (Empfehlung: ja).
-3. Godot-Projekt unter `game/` (Empfehlung: ja).
-4. Kostenlose oder kostenpflichtige Paketeditionen (Empfehlung: erst kostenlos,
-   nach der Lineup-Abnahme gezielt ergänzen).
+2. Kostenlose oder kostenpflichtige Paketeditionen (Empfehlung: erst kostenlos,
+   nach der Lineup-Abnahme gezielt ergänzen; für die Umgebung wäre die
+   Source-Edition des Stylized Nature MegaKit der erste Kandidat).
+
+Entschieden am 2026-09-17: Rohdownloads außerhalb von Git
+(`D:\Mika\assets`), Godot-Projekt unter `game/`, Farm Buildings nicht
+verwenden, Gebäude per Generator.
