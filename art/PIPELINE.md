@@ -209,14 +209,15 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 |---|---|---|---|---|
 | S0 | Pakete herunterladen und ablegen | Nutzer, manuell | – | ✅ 2026-09-17 |
 | S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – | ✅ `025546e` |
-| S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | offen |
+| S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
 | S3 | Lineup und Player-Entscheidung | Claude · high | S2 | offen |
 | S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9 | offen |
 | S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | offen |
 | S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
-| S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – (parallel zu S2 möglich) | offen |
+| S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |
 | S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | offen |
+| S8b | Häuschen-Nacharbeit: Dach und Stufen | Claude · medium | S8 | offen |
 
 ### S0 – Pakete ablegen (Nutzer) ✅
 
@@ -258,7 +259,14 @@ als 9:20 wird der 8-m-Bereich seitlich beschnitten → auf Breite umstellen.
 
 ### S3 – Lineup und Player-Entscheidung (Claude · high)
 
-- **Ist:** Intake-GLBs unter `game/assets/`; Varianten A/B/C (Abschnitt 4).
+- **Ist:** Intake-GLBs unter `game/assets/` (Liste und Dreiecke in
+  `art/ASSETS.md`); Varianten A/B/C (Abschnitt 4); Häuschen
+  `build/buildings/bldg_cottage/` (2,77 m). Befunde aus S2 zum Einbeziehen:
+  `char_garden_wight` misst nach Intake 0,901 m statt der dokumentierten
+  0,95 m (prüfen, ob `build/`-GLB veraltet oder die Angabe falsch ist);
+  `crop_carrot_2` ist niedriger als Stufe 1; `tree_common_1` 6 265 Dreiecke
+  (> 4 000); Godot extrahiert eingebettete Texturen zusätzlich als PNG
+  (Baum und Fass je ca. 1,5 MB doppelt) → Import-Einstellung klären.
 - **Aufgabe:** `art/tools/lineup.py`: Kandidaten nebeneinander auf einem
   1-m-Raster, gleiche Kamera (ortho, 50°) und gleiches Licht wie
   `garden_wight.py`; Renders in Handy-Darstellungsgröße (Figur 96 und 48 px).
@@ -341,6 +349,25 @@ Hintergrund, feste 3/4-Kamera, gleiches Licht; Ausgabe
   Größenvergleich zum Gartenwicht); danach Sichtprüfung durch Claude.
 - **Schreibbereich:** `art/generators/bldg_oven.py`,
   `docs/previews/bldg_oven*.png`, `docs/STATUS.md`.
+
+### S8b – Häuschen-Nacharbeit (Claude · medium)
+
+- **Ist:** `art/generators/bldg_cottage.py` (S8, 7 128 Dreiecke), Renders
+  `docs/previews/bldg_cottage*.png`, offene Befunde in `art/README.md`
+  Abschnitt Gebäude. Sichtprüfung gegen `mockup.png`: Das Dach nimmt aus
+  50° über die Hälfte der Silhouette ein und wirkt wie ein Pilzhut; die
+  sieben dünnen, stark gewellten Schindelringe lesen sich eher wie
+  Papier-/Blütenblätter als wie Ziegel; Stufensteine gleichförmig.
+- **Aufgabe:** Wand höher bzw. Dach flacher mit geringerem Überstand, sodass
+  Wand und Tür in der Spielkamera deutlich mehr Fläche haben (Referenz:
+  Wand ≈ Dachhöhe); Schindeln dicker, weniger gewellt, dunkleres
+  Terrakotta mit leichter Farbstreuung pro Ziegel, sichtbare Traufkante;
+  radiale Schattierungslinien der Dachkappe beheben; Stufen unregelmäßiger.
+  Budget weiter ≤ 8 000 Dreiecke.
+- **Abnahme:** wie S8, Vorher/Nachher im Handoff benannt.
+- **Schreibbereich:** `art/generators/bldg_cottage.py`,
+  `docs/previews/bldg_cottage*.png`, `art/README.md` (Abschnitt Gebäude),
+  `docs/STATUS.md`. Nicht parallel zu S9 an denselben Dateien.
 
 ## 10. Offene Entscheidungen
 
