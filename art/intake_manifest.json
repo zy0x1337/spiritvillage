@@ -111,6 +111,194 @@
       "license": "CC0 1.0"
     },
     {
+      "id": "grass_common_short",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Grass_Common_Short.gltf",
+      "target": "game/assets/nature/grass_common_short.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.25,
+      "material_map": {
+        "Grass": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "grass_wispy_short",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Grass_Wispy_Short.gltf",
+      "target": "game/assets/nature/grass_wispy_short.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.3,
+      "material_map": {
+        "Grass": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "flower_3_group",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Flower_3_Group.gltf",
+      "target": "game/assets/nature/flower_3_group.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.3,
+      "material_map": {
+        "Leaves": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "flower_4_group",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Flower_4_Group.gltf",
+      "target": "game/assets/nature/flower_4_group.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.3,
+      "material_map": {
+        "Leaves": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "clover_1",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Clover_1.gltf",
+      "target": "game/assets/nature/clover_1.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.12,
+      "material_map": {
+        "Leaves": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "mushroom_common",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Mushroom_Common.gltf",
+      "target": "game/assets/nature/mushroom_common.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.15,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "pebble_round_1",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Pebble_Round_1.gltf",
+      "target": "game/assets/nature/pebble_round_1.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.24,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "pebble_round_2",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Pebble_Round_2.gltf",
+      "target": "game/assets/nature/pebble_round_2.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.356,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "pebble_round_3",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Pebble_Round_3.gltf",
+      "target": "game/assets/nature/pebble_round_3.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.444,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "rock_medium_1",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Rock_Medium_1.gltf",
+      "target": "game/assets/nature/rock_medium_1.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.6,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "rockpath_round_small_1",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/RockPath_Round_Small_1.gltf",
+      "target": "game/assets/nature/rockpath_round_small_1.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.5,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "rockpath_round_small_2",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/RockPath_Round_Small_2.gltf",
+      "target": "game/assets/nature/rockpath_round_small_2.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.52,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "rockpath_round_small_3",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/RockPath_Round_Small_3.gltf",
+      "target": "game/assets/nature/rockpath_round_small_3.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.55,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "rockpath_round_wide",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/RockPath_Round_Wide.gltf",
+      "target": "game/assets/nature/rockpath_round_wide.glb",
+      "rotate_y_deg": 0,
+      "scale": 0.33,
+      "material_map": {},
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
       "id": "prop_barrel",
       "source_root": "assets",
       "source": "quaternius/fantasy_props_megakit/standard_2026-09-17/Exports/glTF/Barrel.gltf",

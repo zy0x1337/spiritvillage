@@ -8,12 +8,12 @@
 - S2: `intake.py` + manifest + `art/ASSETS.md`.
 - S3: `lineup.py`; **player = Garden Wight (A)**, 0.90 m.
 - S5: `creature_base.py`; **forest spirit** 0.65 m, 4,648 tris.
-- S4a: trees `tree_common_3`/`_5`, bush `bush_common_flowers`; leaves brightened; cottage/oven in `game/assets/buildings/`.
-- S4b: `garden.tscn` (ground, 3×3 beet, buildings, trees, player + spirit); ortho width 6 m at 50°; `crop_growth.gd`/`crop_plot.gd`; `tests/test_crop_growth.gd`; `tools/capture.gd`; post-import `shared_materials.gd` (leaf cards cast no shadow).
-- **S7:** `art/tools/render_icons.py` — 10 transparent 256×256 icons in `game/assets/icons/` from one 3/4 view/light, per-object framing; sheet `docs/previews/icons_sheet.png`.
+- S4a/S4b: trees/bush, cottage/oven, `garden.tscn`, `crop_growth.gd`/`crop_plot.gd`, `capture.gd`, post-import `shared_materials.gd`.
+- **S4c:** ground 40×40 (no background band); cottage/oven fully framed with margin; barrel at the door; 14 path plates door→beet→oven; 38 greenery, 16 pebbles, 1 boulder in `Path`/`Greenery`/`Rocks`; sun x −62°, `light_angular_distance` 1.5, no shadow bars over the beet; trees moved clear of the buildings. 14 dressing GLBs via intake (grass, flowers, clover, mushroom, pebbles, rock, 4 rockpath).
+- S7: `render_icons.py`; 10 icons + sheet.
 
-**Checks:** Godot `--import` exit 0, 0 ERROR; crop-growth tests 6/6 PASS; `--quit-after 120` 0 ERROR; capture 360×800, 60.0 FPS; S7 second run byte-identical (SHA-256, 10/10).
+**Checks:** intake exit 0, 14/14 `--verify` PASS; `--import` 0 ERROR; crop tests 6/6 PASS; `--quit-after 120` 0 ERROR; capture 360×800, 60.0 FPS, 97,979 triangles/frame (budget 150 000).
 **NOT RUN:** phone tests.
 
-**Findings:** S7 crops (thin seedlings) cover 6–12 % of the icon, below the 15 % floor, though fully framed. S4c list (background band, clipped cottage, hard shadows, bare ground) still open.
-**Next step:** S4c scene polish, S6 animations, then phone acceptance.
+**Findings:** S7 crops (thin seedlings) cover 6–12 % of the icon, below the 15 % floor.
+**Next step:** S6 animations, phone acceptance.

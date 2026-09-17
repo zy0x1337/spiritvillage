@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=29 format=3]
 
 [ext_resource type="Script" path="res://scripts/crop_plot.gd" id="1_plot"]
 [ext_resource type="PackedScene" path="res://assets/nature/tree_common_3.glb" id="2_tree3"]
@@ -9,6 +9,20 @@
 [ext_resource type="PackedScene" path="res://assets/props/prop_barrel.glb" id="7_barrel"]
 [ext_resource type="PackedScene" path="res://assets/characters/char_garden_wight.glb" id="8_wight"]
 [ext_resource type="PackedScene" path="res://assets/characters/char_forest_spirit.glb" id="9_spirit"]
+[ext_resource type="PackedScene" path="res://assets/nature/grass_common_short.glb" id="grass1"]
+[ext_resource type="PackedScene" path="res://assets/nature/grass_wispy_short.glb" id="grass2"]
+[ext_resource type="PackedScene" path="res://assets/nature/flower_3_group.glb" id="flower3"]
+[ext_resource type="PackedScene" path="res://assets/nature/flower_4_group.glb" id="flower4"]
+[ext_resource type="PackedScene" path="res://assets/nature/clover_1.glb" id="clover"]
+[ext_resource type="PackedScene" path="res://assets/nature/mushroom_common.glb" id="mushroom"]
+[ext_resource type="PackedScene" path="res://assets/nature/pebble_round_1.glb" id="peb1"]
+[ext_resource type="PackedScene" path="res://assets/nature/pebble_round_2.glb" id="peb2"]
+[ext_resource type="PackedScene" path="res://assets/nature/pebble_round_3.glb" id="peb3"]
+[ext_resource type="PackedScene" path="res://assets/nature/rock_medium_1.glb" id="rock"]
+[ext_resource type="PackedScene" path="res://assets/nature/rockpath_round_small_1.glb" id="road1"]
+[ext_resource type="PackedScene" path="res://assets/nature/rockpath_round_small_2.glb" id="road2"]
+[ext_resource type="PackedScene" path="res://assets/nature/rockpath_round_small_3.glb" id="road3"]
+[ext_resource type="PackedScene" path="res://assets/nature/rockpath_round_wide.glb" id="roadw"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
 albedo_color = Color(0.45, 0.32, 0.22, 1)
@@ -17,7 +31,7 @@ metallic_specular = 0.15
 roughness = 1.0
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-size = Vector2(16, 16)
+size = Vector2(40, 40)
 material = SubResource("StandardMaterial3D_ground")
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_soil"]
@@ -47,10 +61,12 @@ size = 6.0
 far = 200.0
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
-rotation_degrees = Vector3(-50, -40, 0)
+rotation_degrees = Vector3(-62, -40, 0)
 light_color = Color(1, 0.96, 0.87, 1)
 light_energy = 1.2
+light_angular_distance = 1.5
 shadow_enabled = true
+shadow_blur = 1.5
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_garden")
@@ -144,31 +160,311 @@ mesh = SubResource("BoxMesh_plot")
 [node name="Scenery" type="Node3D" parent="."]
 
 [node name="Cottage" parent="Scenery" instance=ExtResource("5_cottage")]
-position = Vector3(-1.6, 0, -4.2)
+position = Vector3(-1.15, 0, -4.2)
 
 [node name="Oven" parent="Scenery" instance=ExtResource("6_oven")]
-position = Vector3(2.3, 0, -3.8)
+position = Vector3(1.95, 0, -3.9)
 
 [node name="Barrel" parent="Scenery" instance=ExtResource("7_barrel")]
-position = Vector3(-2.9, 0, -3)
+position = Vector3(-0.35, 0, -2.85)
 
 [node name="Tree_1" parent="Scenery" instance=ExtResource("2_tree3")]
-position = Vector3(-2.5, 0, -0.8)
+position = Vector3(-2.05, 0, -0.1)
 
-[node name="Tree_2" parent="Scenery" instance=ExtResource("3_tree5")]
-position = Vector3(2.5, 0, -0.8)
+[node name="Tree_2" parent="Scenery" instance=ExtResource("2_tree3")]
+position = Vector3(2.05, 0, -0.1)
 
 [node name="Tree_3" parent="Scenery" instance=ExtResource("3_tree5")]
-position = Vector3(-2.7, 0, 2.6)
+position = Vector3(-2.05, 0, 2.6)
 
-[node name="Tree_4" parent="Scenery" instance=ExtResource("2_tree3")]
-position = Vector3(2.7, 0, 2.6)
+[node name="Tree_4" parent="Scenery" instance=ExtResource("3_tree5")]
+position = Vector3(2.05, 0, 2.6)
 
 [node name="Bush_1" parent="Scenery" instance=ExtResource("4_bush")]
-position = Vector3(-2.6, 0, 0.9)
+position = Vector3(-2.35, 0, 0.9)
 
 [node name="Bush_2" parent="Scenery" instance=ExtResource("4_bush")]
-position = Vector3(2.6, 0, 0.9)
+position = Vector3(2.35, 0, 0.9)
+
+[node name="Path" type="Node3D" parent="."]
+
+[node name="Plate_01" parent="Path" instance=ExtResource("road1")]
+position = Vector3(-1.217, 0, -2.260)
+rotation_degrees = Vector3(0, 51.3, 0)
+
+[node name="Plate_02" parent="Path" instance=ExtResource("road3")]
+position = Vector3(-0.950, 0, -2.180)
+rotation_degrees = Vector3(0, 90.3, 0)
+
+[node name="Plate_03" parent="Path" instance=ExtResource("road2")]
+position = Vector3(-0.681, 0, -2.110)
+rotation_degrees = Vector3(0, 72.5, 0)
+
+[node name="Plate_04" parent="Path" instance=ExtResource("road1")]
+position = Vector3(-0.406, 0, -2.068)
+rotation_degrees = Vector3(0, 109.5, 0)
+
+[node name="Plate_05" parent="Path" instance=ExtResource("roadw")]
+position = Vector3(-0.130, 0, -2.029)
+rotation_degrees = Vector3(0, 69.1, 0)
+
+[node name="Plate_06" parent="Path" instance=ExtResource("road3")]
+position = Vector3(0.148, 0, -2.015)
+rotation_degrees = Vector3(0, 98.1, 0)
+
+[node name="Plate_07" parent="Path" instance=ExtResource("road2")]
+position = Vector3(0.426, 0, -2.001)
+rotation_degrees = Vector3(0, 118.1, 0)
+
+[node name="Plate_08" parent="Path" instance=ExtResource("road1")]
+position = Vector3(0.700, 0, -2.045)
+rotation_degrees = Vector3(0, 85.3, 0)
+
+[node name="Plate_09" parent="Path" instance=ExtResource("road3")]
+position = Vector3(0.974, 0, -2.095)
+rotation_degrees = Vector3(0, 124.3, 0)
+
+[node name="Plate_10" parent="Path" instance=ExtResource("roadw")]
+position = Vector3(1.210, 0, -2.240)
+rotation_degrees = Vector3(0, 96.7, 0)
+
+[node name="Plate_11" parent="Path" instance=ExtResource("road2")]
+position = Vector3(1.441, 0, -2.394)
+rotation_degrees = Vector3(0, 131.7, 0)
+
+[node name="Plate_12" parent="Path" instance=ExtResource("road1")]
+position = Vector3(1.592, 0, -2.627)
+rotation_degrees = Vector3(0, 136.0, 0)
+
+[node name="Plate_13" parent="Path" instance=ExtResource("road3")]
+position = Vector3(1.730, 0, -2.868)
+rotation_degrees = Vector3(0, 176.0, 0)
+
+[node name="Plate_14" parent="Path" instance=ExtResource("road2")]
+position = Vector3(1.843, 0, -3.123)
+rotation_degrees = Vector3(0, 123.0, 0)
+
+[node name="Greenery" type="Node3D" parent="."]
+
+[node name="Grass_wispy_01" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-2.85, 0, -4.60)
+rotation_degrees = Vector3(0, 10, 0)
+
+[node name="Grass_common_01" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(-2.60, 0, -3.00)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="Clover_01" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(-2.75, 0, -1.90)
+rotation_degrees = Vector3(0, 65, 0)
+
+[node name="Flower_3_01" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(-2.55, 0, -1.35)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="Grass_wispy_02" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-2.80, 0, 0.05)
+rotation_degrees = Vector3(0, 100, 0)
+
+[node name="Flower_4_01" parent="Greenery" instance=ExtResource("flower4")]
+position = Vector3(-2.85, 0, 2.30)
+rotation_degrees = Vector3(0, 175, 0)
+
+[node name="Grass_common_02" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(-2.60, 0, 3.60)
+rotation_degrees = Vector3(0, 210, 0)
+
+[node name="Clover_02" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(-1.85, 0, 4.40)
+rotation_degrees = Vector3(0, 25, 0)
+
+[node name="Grass_wispy_03" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(2.80, 0, -3.70)
+rotation_degrees = Vector3(0, 55, 0)
+
+[node name="Flower_3_02" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(2.55, 0, -2.90)
+rotation_degrees = Vector3(0, 120, 0)
+
+[node name="Grass_common_03" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(2.85, 0, -2.00)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="Grass_wispy_04" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(2.60, 0, -1.20)
+rotation_degrees = Vector3(0, 190, 0)
+
+[node name="Clover_03" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(2.85, 0, 0.30)
+rotation_degrees = Vector3(0, 145, 0)
+
+[node name="Flower_4_02" parent="Greenery" instance=ExtResource("flower4")]
+position = Vector3(2.60, 0, 1.60)
+rotation_degrees = Vector3(0, 80, 0)
+
+[node name="Grass_common_04" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(2.70, 0, 3.90)
+rotation_degrees = Vector3(0, 230, 0)
+
+[node name="Flower_3_03" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(1.90, 0, 4.80)
+rotation_degrees = Vector3(0, 310, 0)
+
+[node name="Grass_wispy_05" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(0.90, 0, -5.30)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="Flower_4_03" parent="Greenery" instance=ExtResource("flower4")]
+position = Vector3(1.50, 0, -5.90)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="Grass_common_05" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(-1.30, 0, -6.10)
+rotation_degrees = Vector3(0, 130, 0)
+
+[node name="Clover_04" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(2.40, 0, -5.10)
+rotation_degrees = Vector3(0, 95, 0)
+
+[node name="Grass_wispy_06" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-2.20, 0, -7.00)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="Flower_3_04" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(0.20, 0, -7.60)
+rotation_degrees = Vector3(0, 160, 0)
+
+[node name="Grass_common_06" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(1.90, 0, -8.10)
+rotation_degrees = Vector3(0, 250, 0)
+
+[node name="Clover_05" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(-0.90, 0, -8.60)
+rotation_degrees = Vector3(0, 200, 0)
+
+[node name="Grass_wispy_07" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-0.60, 0, 3.80)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="Grass_common_07" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(0.70, 0, 4.30)
+rotation_degrees = Vector3(0, 45, 0)
+
+[node name="Flower_3_05" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(-1.70, 0, 6.40)
+rotation_degrees = Vector3(0, 280, 0)
+
+[node name="Grass_wispy_08" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(1.60, 0, 6.90)
+rotation_degrees = Vector3(0, 115, 0)
+
+[node name="Clover_06" parent="Greenery" instance=ExtResource("clover")]
+position = Vector3(2.40, 0, 7.40)
+rotation_degrees = Vector3(0, 340, 0)
+
+[node name="Grass_common_08" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(-2.60, 0, 7.50)
+rotation_degrees = Vector3(0, 165, 0)
+
+[node name="Flower_4_04" parent="Greenery" instance=ExtResource("flower4")]
+position = Vector3(-1.70, 0, -1.55)
+rotation_degrees = Vector3(0, 55, 0)
+
+[node name="Flower_3_06" parent="Greenery" instance=ExtResource("flower3")]
+position = Vector3(1.75, 0, 1.55)
+rotation_degrees = Vector3(0, 190, 0)
+
+[node name="Grass_wispy_09" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-1.75, 0, 1.75)
+rotation_degrees = Vector3(0, 300, 0)
+
+[node name="Mushroom_01" parent="Greenery" instance=ExtResource("mushroom")]
+position = Vector3(-1.75, 0, 2.45)
+
+[node name="Mushroom_02" parent="Greenery" instance=ExtResource("mushroom")]
+position = Vector3(2.00, 0, -1.60)
+
+[node name="Grass_common_09" parent="Greenery" instance=ExtResource("grass1")]
+position = Vector3(-0.40, 0, 7.00)
+rotation_degrees = Vector3(0, 95, 0)
+
+[node name="Flower_4_05" parent="Greenery" instance=ExtResource("flower4")]
+position = Vector3(0.80, 0, 7.30)
+rotation_degrees = Vector3(0, 240, 0)
+
+[node name="Grass_wispy_10" parent="Greenery" instance=ExtResource("grass2")]
+position = Vector3(-1.70, 0, 7.20)
+rotation_degrees = Vector3(0, 155, 0)
+
+[node name="Rocks" type="Node3D" parent="."]
+
+[node name="Pebble_01" parent="Rocks" instance=ExtResource("peb1")]
+position = Vector3(-1.55, 0, -1.35)
+rotation_degrees = Vector3(0, 15, 0)
+
+[node name="Pebble_02" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(-1.30, 0, -1.60)
+rotation_degrees = Vector3(0, 40, 0)
+
+[node name="Pebble_03" parent="Rocks" instance=ExtResource("peb3")]
+position = Vector3(-0.55, 0, -1.58)
+rotation_degrees = Vector3(0, 75, 0)
+
+[node name="Pebble_04" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(0.20, 0, -1.60)
+rotation_degrees = Vector3(0, 105, 0)
+
+[node name="Pebble_05" parent="Rocks" instance=ExtResource("peb1")]
+position = Vector3(0.85, 0, -1.58)
+rotation_degrees = Vector3(0, 20, 0)
+
+[node name="Pebble_06" parent="Rocks" instance=ExtResource("peb3")]
+position = Vector3(1.45, 0, -1.30)
+rotation_degrees = Vector3(0, 60, 0)
+
+[node name="Pebble_07" parent="Rocks" instance=ExtResource("peb1")]
+position = Vector3(1.55, 0, -0.55)
+rotation_degrees = Vector3(0, 130, 0)
+
+[node name="Pebble_08" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(1.58, 0, 0.25)
+rotation_degrees = Vector3(0, 165, 0)
+
+[node name="Pebble_09" parent="Rocks" instance=ExtResource("peb3")]
+position = Vector3(1.50, 0, 0.95)
+rotation_degrees = Vector3(0, 30, 0)
+
+[node name="Pebble_10" parent="Rocks" instance=ExtResource("peb1")]
+position = Vector3(1.25, 0, 1.55)
+rotation_degrees = Vector3(0, 70, 0)
+
+[node name="Pebble_11" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(0.45, 0, 1.60)
+rotation_degrees = Vector3(0, 10, 0)
+
+[node name="Pebble_12" parent="Rocks" instance=ExtResource("peb3")]
+position = Vector3(-0.30, 0, 1.58)
+rotation_degrees = Vector3(0, 85, 0)
+
+[node name="Pebble_13" parent="Rocks" instance=ExtResource("peb1")]
+position = Vector3(-1.05, 0, 1.55)
+rotation_degrees = Vector3(0, 45, 0)
+
+[node name="Pebble_14" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(-1.58, 0, 1.10)
+rotation_degrees = Vector3(0, 120, 0)
+
+[node name="Pebble_15" parent="Rocks" instance=ExtResource("peb3")]
+position = Vector3(-1.60, 0, 0.30)
+rotation_degrees = Vector3(0, 155, 0)
+
+[node name="Pebble_16" parent="Rocks" instance=ExtResource("peb2")]
+position = Vector3(-1.55, 0, -0.50)
+rotation_degrees = Vector3(0, 5, 0)
+
+[node name="Boulder_01" parent="Rocks" instance=ExtResource("rock")]
+position = Vector3(-2.45, 0, 1.90)
+rotation_degrees = Vector3(0, 35, 0)
 
 [node name="Actors" type="Node3D" parent="."]
 
