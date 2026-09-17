@@ -9,11 +9,11 @@
 - S3: `lineup.py`; **player = Garden Wight (A)**, 0.90 m.
 - S5: `creature_base.py`; **forest spirit** 0.65 m, 4,648 tris.
 - S4a: trees `tree_common_3`/`_5`, bush `bush_common_flowers`; leaves brightened via `material_map`; cottage and oven in `game/assets/buildings/`.
-- **S4b:** `game/scenes/garden.tscn` (16×16 ground, 3×3 beet, cottage/oven/barrel, 4 trees, 2 bushes, player + spirit); camera ortho, width 6 m, 50° down; `crop_growth.gd` (pure logic) + `crop_plot.gd`; `tests/test_crop_growth.gd`; `tools/capture.gd`; post-import `scripts/import/shared_materials.gd` splits bark/leaf meshes so leaf cards cast no shadow (trunks do), crops/props/bushes cast none.
+- **S4b:** `game/scenes/garden.tscn` (ground, 3×3 beet, cottage/oven/barrel, trees, bushes, player + spirit); camera ortho, width 6 m, 50° down; `crop_growth.gd` (pure logic) + `crop_plot.gd`; `tests/test_crop_growth.gd`; `tools/capture.gd`; post-import `shared_materials.gd` (leaf cards cast no shadow).
 
 **Checks:** Godot `--import` exit 0, 0 ERROR; crop-growth tests 6/6 PASS; `--quit-after 120` 0 ERROR; capture 360×800, avg 60.0 FPS.
 **NOT RUN:** phone tests.
 
-**Findings (Claude review of `garden_scene.png`):** empty background band above the 16 m ground; cottage roof clipped at the frame edge; long hard shadows across the beet; ground bare (no path, grass, flowers, stones); crops off-centre on some plots; barrel not visible. → session S4c.
+**Findings (Claude review of `garden_scene.png`, → S4c):** background band above the ground; cottage clipped at the frame edge; long hard shadows; bare ground (no path, grass, flowers); crops off-centre; barrel not visible.
 **Open decisions:** paid editions.
 **Next step:** S4c scene polish and S7 icons (parallel); then S6 animations, phone acceptance.
