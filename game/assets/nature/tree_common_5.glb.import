@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cu3tc872rf2k6"
-path="res://.godot/imported/prop_barrel.glb-6392621b3e33411e5614b270cfbb7457.scn"
+uid="uid://ptghvs4e6nn7"
+path="res://.godot/imported/tree_common_5.glb-cd7e974f2fbc8044f8e5c370eea2ed94.scn"
 
 [deps]
 
-source_file="res://assets/props/prop_barrel.glb"
-dest_files=["res://.godot/imported/prop_barrel.glb-6392621b3e33411e5614b270cfbb7457.scn"]
+source_file="res://assets/nature/tree_common_5.glb"
+dest_files=["res://.godot/imported/tree_common_5.glb-cd7e974f2fbc8044f8e5c370eea2ed94.scn"]
 
 [params]
 

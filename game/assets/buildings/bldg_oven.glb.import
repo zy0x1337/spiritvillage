@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://c3shi1hoipc00"
-path="res://.godot/imported/tree_common_1.glb-8c60b9dd1667abfe3ed58c137728079e.scn"
+uid="uid://ddhkv3ncjpafl"
+path="res://.godot/imported/bldg_oven.glb-e74db3608e978638a83620191c3002e3.scn"
 
 [deps]
 
-source_file="res://assets/nature/tree_common_1.glb"
-dest_files=["res://.godot/imported/tree_common_1.glb-8c60b9dd1667abfe3ed58c137728079e.scn"]
+source_file="res://assets/buildings/bldg_oven.glb"
+dest_files=["res://.godot/imported/bldg_oven.glb-e74db3608e978638a83620191c3002e3.scn"]
 
 [params]
 

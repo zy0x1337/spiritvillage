@@ -9,11 +9,13 @@ match ``game/scenes/garden.tscn``). Renders use the S1 camera pixel density
 Usage (arguments after ``--``)::
 
     blender --background --factory-startup --python-exit-code 1 --python \\
-        art/tools/lineup.py -- --output-dir build/lineup
+        art/tools/lineup.py -- --output-dir build/lineup [--set figures|trees]
 
-Output: ``lineup_row_<n>x.png`` (all candidates) and ``lineup_figures_<n>x.png``
-(characters next to a crop and a prop), plus one line per
-candidate with height, footprint, triangles and pixel height at 1x.
+Output (``--set figures``): ``lineup_row_<n>x.png`` (all candidates) and
+``lineup_figures_<n>x.png`` (characters next to a crop and a prop). Output
+(``--set trees``): ``lineup_trees_<n>x.png`` (Garden Wight as size reference,
+then every tree and bush candidate). One line per candidate with height,
+footprint, triangles and pixel height at 1x.
 """
 
 from __future__ import annotations
@@ -45,6 +47,23 @@ CANDIDATES = (
     ("tree_common_1", "game/assets/nature/tree_common_1.glb"),
 )
 FIGURE_GROUP = ("crop_carrot_4", "prop_barrel", "char_garden_wight", "char_forest_spirit", "char_mushnub")
+# S4a tree lineup: the Garden Wight first as size reference, then every tree and
+# bush candidate from the Stylized Nature MegaKit (``--set trees``).
+TREES = (
+    ("char_garden_wight", "game/assets/characters/char_garden_wight.glb"),
+    ("tree_common_1", "game/assets/nature/tree_common_1.glb"),
+    ("tree_common_2", "game/assets/nature/tree_common_2.glb"),
+    ("tree_common_3", "game/assets/nature/tree_common_3.glb"),
+    ("tree_common_4", "game/assets/nature/tree_common_4.glb"),
+    ("tree_common_5", "game/assets/nature/tree_common_5.glb"),
+    ("tree_twisted_1", "game/assets/nature/tree_twisted_1.glb"),
+    ("tree_twisted_2", "game/assets/nature/tree_twisted_2.glb"),
+    ("tree_twisted_3", "game/assets/nature/tree_twisted_3.glb"),
+    ("tree_twisted_4", "game/assets/nature/tree_twisted_4.glb"),
+    ("tree_twisted_5", "game/assets/nature/tree_twisted_5.glb"),
+    ("bush_common", "game/assets/nature/bush_common.glb"),
+    ("bush_common_flowers", "game/assets/nature/bush_common_flowers.glb"),
+)
 
 CELL_GAP = 0.3            # minimum free space between footprints (m)
 PITCH_DEG = 50.0
@@ -174,17 +193,22 @@ def main() -> None:
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
     parser = argparse.ArgumentParser(prog="lineup.py")
     parser.add_argument("--output-dir", default="build/lineup")
+    parser.add_argument("--set", choices=("figures", "trees"), default="figures")
     args = parser.parse_args(argv)
     output_dir = (REPO / args.output_dir).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
+    candidates = CANDIDATES if args.set == "figures" else TREES
 
     clear_scene()
     placed = {}
     x = 0.0
-    for label, rel in CANDIDATES:
+    for label, rel in candidates:
         path = REPO / rel
         if not path.exists():
-            raise SystemExit(f"[lineup] missing {rel}")
+            # Candidates dropped from the manifest (S4a selection) may be gone;
+            # the remaining ones still render.
+            print(f"[lineup] skip missing {rel}")
+            continue
         objects = import_glb(path)
         bpy.context.view_layer.update()
         lo, hi, tris = world_bounds(objects)
@@ -212,6 +236,13 @@ def main() -> None:
         print(f"[lineup] {label:18s} height {item['height']:.3f} m, footprint {item['width']:.2f} x "
               f"{item['depth']:.2f} m, {item['tris']:5d} tris, min_z {item['min_z']:+.4f}, "
               f"{px:.0f} px at 1x ({px * 3:.0f} px at 3x)")
+    if args.set == "trees":
+        for factor in ROW_SCALES:
+            frame(scene, camera, -0.5, x + 0.5, -deepest / 2.0 - 0.5, deepest / 2.0 + 0.5, tallest + 0.3,
+                  PX_PER_M * factor)
+            render(scene, output_dir / f"lineup_trees_{factor}x.png")
+        return
+
     for factor in ROW_SCALES:
         frame(scene, camera, -0.5, x + 0.5, -deepest / 2.0 - 0.5, deepest / 2.0 + 0.5, tallest + 0.3,
               PX_PER_M * factor)

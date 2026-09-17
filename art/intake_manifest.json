@@ -63,13 +63,49 @@
       "license": "CC0 1.0"
     },
     {
-      "id": "tree_common_1",
+      "id": "tree_common_3",
       "source_root": "assets",
-      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/CommonTree_1.gltf",
-      "target": "game/assets/nature/tree_common_1.glb",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/CommonTree_3.gltf",
+      "target": "game/assets/nature/tree_common_3.glb",
       "rotate_y_deg": 0,
       "target_height_m": 3.5,
-      "material_map": {},
+      "material_map": {
+        "Leaves_NormalTree": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "tree_common_5",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/CommonTree_5.gltf",
+      "target": "game/assets/nature/tree_common_5.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 3.5,
+      "material_map": {
+        "Leaves_NormalTree": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
+      "package": "Stylized Nature MegaKit",
+      "edition": "Standard (free, 68/116 models)",
+      "license": "CC0 1.0"
+    },
+    {
+      "id": "bush_common_flowers",
+      "source_root": "assets",
+      "source": "quaternius/stylized_nature_megakit/standard_2026-09-17/glTF/Bush_Common_Flowers.gltf",
+      "target": "game/assets/nature/bush_common_flowers.glb",
+      "rotate_y_deg": 0,
+      "target_height_m": 0.9,
+      "material_map": {
+        "Leaves_NormalTree": {
+          "base_color": [0.45, 0.62, 0.25]
+        }
+      },
       "package": "Stylized Nature MegaKit",
       "edition": "Standard (free, 68/116 models)",
       "license": "CC0 1.0"
@@ -85,6 +121,30 @@
       "package": "Fantasy Props MegaKit",
       "edition": "Standard (free)",
       "license": "CC0 1.0"
+    },
+    {
+      "id": "bldg_cottage",
+      "source_root": "repo",
+      "source": "build/buildings/bldg_cottage/bldg_cottage.glb",
+      "target": "game/assets/buildings/bldg_cottage.glb",
+      "rotate_y_deg": 0,
+      "scale": 1.0,
+      "material_map": {},
+      "package": "own generator art/generators/bldg_cottage.py",
+      "edition": "project",
+      "license": "project"
+    },
+    {
+      "id": "bldg_oven",
+      "source_root": "repo",
+      "source": "build/buildings/bldg_oven/bldg_oven.glb",
+      "target": "game/assets/buildings/bldg_oven.glb",
+      "rotate_y_deg": 0,
+      "scale": 1.0,
+      "material_map": {},
+      "package": "own generator art/generators/bldg_oven.py",
+      "edition": "project",
+      "license": "project"
     },
     {
       "id": "char_mushnub",

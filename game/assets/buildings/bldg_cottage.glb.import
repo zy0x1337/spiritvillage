@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://cu3tc872rf2k6"
-path="res://.godot/imported/prop_barrel.glb-6392621b3e33411e5614b270cfbb7457.scn"
+uid="uid://dmbyk1rjpusgf"
+path="res://.godot/imported/bldg_cottage.glb-255e4c585b3f179acb899df541fdf845.scn"
 
 [deps]
 
-source_file="res://assets/props/prop_barrel.glb"
-dest_files=["res://.godot/imported/prop_barrel.glb-6392621b3e33411e5614b270cfbb7457.scn"]
+source_file="res://assets/buildings/bldg_cottage.glb"
+dest_files=["res://.godot/imported/bldg_cottage.glb-255e4c585b3f179acb899df541fdf845.scn"]
 
 [params]
 
@@ -39,4 +39,4 @@ materials/extract_format=0
 materials/extract_path=""
 _subresources={}
 gltf/naming_version=2
-gltf/embedded_image_handling=2
+gltf/embedded_image_handling=1
