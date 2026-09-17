@@ -28,8 +28,8 @@ gemalte Oberfläche.
 
 - **Format:** GLB (Godot-Empfehlung für 3D-Szenen; Skelette und Animationen
   bleiben erhalten).
-- **Maßstab:** 1 Einheit = 1 m. Beetfeld = 1 × 1 m. Player ca. 0,95 m
-  (aktueller Gartenwicht).
+- **Maßstab:** 1 Einheit = 1 m. Beetfeld = 1 × 1 m. Player 0,90 m
+  (Gartenwicht, über Vertices gemessen). Größenverhältnisse: Abschnitt 4b.
 - **Ausrichtung:** Y-up im GLB. **Vorderseite = +Z** (glTF-Konvention, Godot
   `Vector3.MODEL_FRONT`); abweichende Quellmodelle werden beim Intake gedreht.
 - **Ursprung:** Mitte der Standfläche, Bodenkontakt bei y = 0.
@@ -71,7 +71,7 @@ Regeln:
 
 ## 4. Figuren
 
-**Player** ⚠ – Entscheidung im Vergleich (Session S3), in Smartphone-Größe:
+**Player** ✅ – entschieden in S3 (2026-09-17): **Variante A, Gartenwicht.**
 
 | Variante | Basis | Stärke | Schwäche |
 |---|---|---|---|
@@ -79,11 +79,18 @@ Regeln:
 | **B** Gartenwicht auf Pilzwesen-Basis | Quaternius Ultimate Monsters | Fertige Form, evtl. vorhandene Animationen | Paketstil passt nur teilweise zum Ton |
 | **C** Menschlicher Gärtner | Ultimate Modular Men (Bauer) | Skelett und Animationen vorhanden | Kantig und länglich, verfehlt den Referenzlook |
 
-**Empfehlung: A als Hauptkandidat, B als direkter Vergleich, C nur auf
-ausdrücklichen Wunsch.** Das deckt sich mit der Projektvorgabe „originale,
-rundliche, nichtmenschliche Gartenwesen“ (AGENTS.md). Die Vorgabe „nur
-fertige Assets, keine Modellierarbeit“ gilt nicht für Figuren: A ist per
-Skript erzeugt, also reproduzierbar, aber eine eigene Erstellung.
+Begründung aus dem Lineup (`docs/previews/lineup_figures_*.png`, gleiche
+Kamera, gleiches Licht, gleiche Höhe 0,8–0,9 m): Aus 50° verdeckt der Hut des
+Mushnub (B) das Gesicht fast vollständig; übrig bleibt ein blauer Pilzhut ohne
+Ausdruck. Der Gartenwicht zeigt Augen, Kappe und Tasche und bleibt bei 48 px
+Figurenhöhe lesbar. A entspricht zudem der Projektvorgabe „originale,
+rundliche, nichtmenschliche Gartenwesen“ (AGENTS.md). C wurde nicht
+heruntergeladen und bleibt verworfen. B wird nicht weiterverfolgt;
+`char_mushnub` bleibt nur als Vergleichsasset im Repo.
+
+Befunde für S5: Die Gartenwicht-Farben stehen noch als lineare Werte in der
+`CONFIG` und wirken blass (Kappe mintgrün statt Blattgrün); wie beim Häuschen
+auf sRGB umstellen. Mit 9 190 Dreiecken knapp unter dem Budget.
 
 **Spirits** ✅ – gemeinsame Gestaltungsvorlage, wenige Grundkörper:
 
@@ -122,6 +129,27 @@ Formen sind einfach und rund, das passt zur Figurengeometrie.
   Tiefenunschärfe, Moosdetails) ist auf dem Handy nicht 1:1 erreichbar;
   angenähert wird er über warmes Licht, Farbverläufe und angedeutete
   Verschattung in den Materialien.
+
+## 4b. Größenverhältnisse ✅ (S3)
+
+Gemessen im Lineup (`art/tools/lineup.py`, Vertices, Bodenkontakt 0).
+Vergleich mit `mockup.png`: Tür ≈ 1,5 × Figur, reife Pflanze ≈ ½–⅔ Figur,
+Fass ≈ ⅔ Figur.
+
+| Asset | Höhe | Verhältnis zum Player | Stand |
+|---|---|---|---|
+| `char_garden_wight` | 0,90 m | 1 | Referenz |
+| `crop_carrot_4` (reif) | 0,55 m | 0,6 | im Manifest (Skalierung 0,43 für alle Karottenstufen; vorher 0,35 m) |
+| `crop_carrot_1`…`_3` | 0,13–0,22 m | 0,15–0,25 | Keimlinge; auf Erdbeet prüfen (S4) |
+| `prop_barrel` | 0,55 m | 0,6 | im Manifest (vorher 0,90 m, so groß wie die Figur) |
+| `bldg_cottage` | 2,96 m, Tür 1,3 m | Tür 1,45 | passt |
+| `tree_common_1` | 3,5 m | 3,9 | Größe passt; Form und Farbe nicht (siehe S4) |
+
+**Spielkamera ⚠:** Mit der S1-Kamera (8 m sichtbare Breite) ist der Player nur
+32 logische px hoch (≈ 97 px auf einem 1080-px-Handy, `lineup_row_1x.png`).
+In der Referenz nimmt er etwa ein Sechstel der Bildbreite ein, das entspricht
+ca. 5,5–6 m sichtbarer Breite. Empfehlung für S4: Kamera auf Breite fixieren,
+6 m sichtbar; auf dem Handy bestätigen.
 
 ## 5. Animation ✅
 
@@ -210,7 +238,7 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S0 | Pakete herunterladen und ablegen | Nutzer, manuell | – | ✅ 2026-09-17 |
 | S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – | ✅ `025546e` |
 | S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
-| S3 | Lineup und Player-Entscheidung | Claude · high | S2 | offen |
+| S3 | Lineup und Player-Entscheidung | Claude · high | S2 | ✅ |
 | S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9 | offen |
 | S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | offen |
 | S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
@@ -282,7 +310,13 @@ als 9:20 wird der 8-m-Bereich seitlich beschnitten → auf Breite umstellen.
   aufbauen: Wege, 3 × 3-Beet, 3 Bäume, Häuschen (S8), Steinofen (S9), Player
   an fester Position, 1 Helfer. Generierte GLBs aus `build/` kommen als
   Manifest-Einträge ohne Drittquelle über den Intake nach `game/assets/`.
-  Kamera auf `keep_aspect` = Breite umstellen (Befund S1). Pflanzen wechseln per Skript
+  Kamera auf `keep_aspect` = Breite umstellen (Befund S1), sichtbare Breite
+  ca. 6 m (Abschnitt 4b). Baum: `tree_common_1` ist schmal und im Render sehr
+  dunkel (Blattkarten); andere Bäume/Büsche aus dem Stylized Nature MegaKit
+  per Lineup vergleichen (rundere Krone, hellere Blätter über `material_map`,
+  ≤ 4 000 Dreiecke). Godot legt eingebettete GLB-Texturen zusätzlich als PNG
+  ab (Fass, Baum): Import-Einstellung `gltf/embedded_image_handling` klären
+  und Duplikate entfernen. Pflanzen wechseln per Skript
   (`game/scripts/crop_plot.gd`) durch 5 Wachstumsstufen. Post-Import-Skript
   `game/scripts/import/shared_materials.gd` gemäß Abschnitt 6.4.
 - **Abnahme:** Headless-Start ohne Fehler; Screenshot im Hochformat
@@ -291,7 +325,8 @@ als 9:20 wird der 8-m-Bereich seitlich beschnitten → auf Breite umstellen.
 
 ### S5 – Wesen-Grundkörper und Waldwesen (Claude · high)
 
-Grundkörper aus `garden_wight.py` in ein gemeinsames Modul überführen;
+Grundkörper aus `garden_wight.py` in ein gemeinsames Modul überführen
+(Farben dabei auf sRGB umstellen, siehe Abschnitt 4);
 Gartenwicht und Waldwesen als Konfigurationen; Abnahme nach
 `BLENDER_WORKFLOW.md` Abschnitt 3 (`--views`, keine Durchdringungen,
 Budget ≤ 6 000 Dreiecke für das Waldwesen).
@@ -317,7 +352,7 @@ Hintergrund, feste 3/4-Kamera, gleiches Licht; Ausgabe
   Abschnitt 2; Budget ≤ 8 000 Dreiecke; Merkmale: Abschnitt 4a, Referenz
   `mockup.png` (oben links, ungetrackte Datei im Arbeitsverzeichnis).
   Gartenwicht-GLB zum Größenvergleich:
-  `build/characters/garden_wight/garden_wight.glb` (0,95 m hoch; bei Bedarf
+  `build/characters/garden_wight/garden_wight.glb` (0,90 m hoch; bei Bedarf
   neu erzeugen).
 - **Aufgabe:** Neuer Generator `art/generators/bldg_cottage.py` (keine
   Änderung an `garden_wight.py`; gemeinsames Modul erst in S5). Startwerte,
@@ -371,11 +406,11 @@ Hintergrund, feste 3/4-Kamera, gleiches Licht; Ausgabe
 
 ## 10. Offene Entscheidungen
 
-1. Player-Variante A/B/C (S3; Empfehlung A).
+1. Sichtbare Breite der Spielkamera (S4; Empfehlung ca. 6 m, Abschnitt 4b).
 2. Kostenlose oder kostenpflichtige Paketeditionen (Empfehlung: erst kostenlos,
    nach der Lineup-Abnahme gezielt ergänzen; für die Umgebung wäre die
    Source-Edition des Stylized Nature MegaKit der erste Kandidat).
 
 Entschieden am 2026-09-17: Rohdownloads außerhalb von Git
 (`D:\Mika\assets`), Godot-Projekt unter `game/`, Farm Buildings nicht
-verwenden, Gebäude per Generator.
+verwenden, Gebäude per Generator; Player-Variante A (S3).

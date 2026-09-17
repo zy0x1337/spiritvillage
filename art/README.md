@@ -184,7 +184,8 @@ Ausgeführt mit dem Stand dieses Commits (Blender 5.2.1 LTS, Windows,
 Nutzer-PC; Protokoll lokal unter `build/characters/garden_wight/run.log`):
 
 - Generator mit `--views`: Exit 0; `.blend`, `.glb`, Vorschau und vier
-  Prüfbilder erzeugt; gebaute Höhe 0,949, Sohlen auf z = 0;
+  Prüfbilder erzeugt; gebaute Höhe 0,949 laut Bounding-Boxen der Teile (überschätzt bei gedrehten
+  Teilen; über Vertices gemessen 0,90 m, siehe `art/tools/lineup.py`), Sohlen auf z = 0;
   Durchdringungsprüfung 0 von 15 Paaren.
 - Alle Bilder angesehen (Kopien unter `docs/previews/`):
   - Vorschau `garden_wight.png`: ganze Figur, Augen mit Glanzpunkt frei,
