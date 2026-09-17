@@ -4,7 +4,7 @@ Verbindliche Arbeitsweise für Blender-Python-Generatoren unter
 `art/generators/`. Die Regeln stammen aus einem Leitfaden zur KI-gestützten
 Blender-Automation und sind auf diesen Projektstand zugeschnitten. **Belegt**
 heißt: in diesem Repository mit Blender 5.2.1 LTS ausgeführt. **Nicht
-eingerichtet** heißt: beschrieben, aber hier weder installiert noch geprüft.
+vorgesehen** heißt: bewusst nicht eingesetzt.
 
 ## 1. API-Regeln
 
@@ -79,19 +79,56 @@ Figur nimmt davon nur einen Teil ein (`--views` gibt den Wert aus).
   `docs/previews/`.
 - Handoff: ausgeführte Prüfungen mit Beleg, ausstehende als NOT RUN.
 
-## 5. Nicht eingerichtet
+## 5. Blender MCP (interaktiv, Nutzer-PC)
 
-- **Blender MCP** (Live-Verbindung zu einer laufenden Blender-Instanz über
-  ein Addon und einen MCP-Server; Szene abfragen, Code direkt ausführen).
-  Nutzen: schnellere, interaktive Iteration ohne Neustart pro Lauf und
-  Feintuning, während der Nutzer zusieht. Grenzen: Das Addon führt beliebigen
-  Code aus, der Server läuft in einem Hintergrund-Thread (Datenänderungen
-  müssen im Hauptthread landen), und Ergebnisse sind nur reproduzierbar, wenn
-  sie in die `CONFIG` des Generators zurückgeschrieben werden. Der Generator
-  bleibt die Quelle der Wahrheit. Externe Dienste über MCP (Asset-Downloads,
-  KI-Mesh-Generierung) widersprechen der Vorgabe „keine heruntergeladenen
-  Assets“ und bräuchten eine eigene Entscheidung samt Herkunftsnachweis.
+Live-Verbindung eines Agenten zu einem **geöffneten** Blender: Szene abfragen,
+Code ausführen, Screenshots. Einsatz: schnelles Ausprobieren und Feintuning,
+während der Nutzer zusieht. **Ergebnisse zählen erst, wenn sie in die `CONFIG`
+bzw. den Code eines Generators übertragen und mit einem Hintergrundlauf
+(`--views`) bestätigt sind.** Der Generator bleibt die Quelle der Wahrheit.
+
+**Eingerichtet** (Nutzer-PC, 2026-09-17, mit Blender 5.2.1 geprüft):
+
+- Paket `mcp-for-blender` **2.0.0** (MIT, github.com/ahujasid/blender-mcp;
+  früher `blender-mcp`), Addon „MCP for Blender“ 1.7. Der Quelltext des Addons
+  wurde vor der Installation durchgesehen; die installierte Datei ist
+  bytegleich.
+- Addon-Datei einmal pro Blender-Version:
+  `uvx mcp-for-blender@2.0.0 install-addon` →
+  `%APPDATA%\Blender Foundation\Blender\5.2\scripts\addons\blender_mcp.py`.
+- Claude Code, nur lokal für dieses Projekt (nicht im Repo):
+  `claude mcp add --scope local blender --env DISABLE_TELEMETRY=true -- uvx mcp-for-blender@2.0.0`.
+  Die Werkzeuge erscheinen erst in einer **neuen** Claude-Code-Sitzung.
+- Blender-Sitzung starten (GUI, nicht `--background`):
+
+  ```bash
+  "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" \
+    --python art/tools/blender_mcp_session.py [-- pfad/zur/datei.blend]
+  ```
+
+  Das Skript aktiviert das Addon **nur für diese Sitzung** (kein Eintrag in den
+  Einstellungen). Der Server startet automatisch auf `127.0.0.1:9876`.
+
+**Sicherheits- und Datenschutzregeln:**
+
+- **Telemetrie aus.** Standardmäßig wäre sie an und umfasst Prompts, Code,
+  Screenshots und Bearbeitungsverläufe (laut Bedingungen auch für KI-Training).
+  Abgeschaltet doppelt: `DISABLE_TELEMETRY=true` am MCP-Server und
+  Addon-Zustimmung aus (geprüft: `get_telemetry_consent` → `false`).
+- **Addon nie dauerhaft aktivieren** (nicht in den Einstellungen speichern):
+  Es öffnet einen Socket ohne Authentifizierung, der beliebigen Python-Code
+  ausführt. Geprüft: Nach dem Schließen ist der Port zu, kein
+  Einstellungseintrag.
+- Vor MCP-Arbeit offene Dateien speichern; MCP bevorzugt auf Kopien oder
+  Generator-Ausgaben unter `build/` anwenden.
+- **Externe Dienste im Addon bleiben aus** (Poly Haven, Sketchfab, Poly Pizza,
+  Hyper3D, Hunyuan3D). Assets kommen nur über die dokumentierte Intake-Pipeline
+  mit Herkunftsnachweis (siehe [PIPELINE.md](PIPELINE.md)).
+- Version gepinnt; ein Update erst nach erneuter Quelltextdurchsicht.
+
+## 6. Nicht vorgesehen
+
 - **BlenderProc** (synthetische Trainingsdaten, Masken, Tiefenkarten): für
-  handgestaltete Spielassets ohne Nutzen, daher nicht vorgesehen.
+  handgestaltete Spielassets ohne Nutzen.
 - **`fake-bpy-module`** (Typ-Stubs für Editor-Autovervollständigung):
   optional für die lokale Entwicklung; ersetzt keinen echten Blender-Lauf.

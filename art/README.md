@@ -3,11 +3,14 @@
 Blender-Python-Generatoren für Spirit-Village-Figuren. Jeder Generator ist
 ein eigenständiges, reproduzierbares Skript unter `art/generators/`, das mit
 Blender im Hintergrundmodus ausgeführt wird und `.blend`-Quelldateien sowie
-`.glb`-Exporte für Godot erzeugt. Keine Add-ons, keine externen
-Python-Pakete, keine heruntergeladenen Assets.
+`.glb`-Exporte für Godot erzeugt. Generatoren nutzen keine Add-ons, keine
+externen Python-Pakete und keine heruntergeladenen Assets. Fremd-Assets (CC0)
+gelangen nur über den Intake mit Herkunftsnachweis ins Spiel.
 
-Arbeitsweise (Daten-API statt Operatoren, visuelle Feedbackschleife,
-Prüfungen): **[BLENDER_WORKFLOW.md](BLENDER_WORKFLOW.md)**.
+- **[PIPELINE.md](PIPELINE.md)** – Look, Assetquellen und Lizenzen, Figuren,
+  Animation, Weg ins Spiel, Mobile-Budgets, Sessionplan.
+- **[BLENDER_WORKFLOW.md](BLENDER_WORKFLOW.md)** – Arbeitsweise für
+  Generatoren (Daten-API, visuelle Feedbackschleife, Prüfungen) und Blender MCP.
 
 ## garden_wight.py — Gartenwicht (Player-Charakter)
 
