@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Blender local artifacts (never generated source assets)
+*.blend1
+*.blend2
+*.blend~
+
+# Local, machine-specific generator output (never commit build products
+# from art/generators/*.py here; only checked-in, curated assets belong
+# in the repo, e.g. under art/assets/ once that convention exists).
+/build/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
