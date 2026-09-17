@@ -81,38 +81,44 @@ except ImportError:  # pragma: no cover - outside Blender
 # ---------------------------------------------------------------------------
 
 CONFIG = {
-    # Masonry drum: individual stones on a dark mortar backing, slightly
-    # barrel-shaped and tapered towards the cap.
-    "base_bottom_diameter": 0.86,   # outside diameter at ground level
-    "base_top_diameter": 0.80,      # outside diameter under the cap
-    "base_bulge": 0.028,            # extra radius at mid height -> barrel shape
+    # Masonry drum: individual stones on a dark mortar backing, nearly
+    # cylindrical with only a slight barrel and taper.
+    "base_bottom_diameter": 0.84,   # outside diameter at ground level
+    "base_top_diameter": 0.82,      # outside diameter under the cap
+    "base_bulge": 0.012,            # extra radius at mid height -> slight barrel
     "base_height": 0.62,            # ground to the top of the stone courses
     "course_count": 4,              # horizontal stone courses
-    "stones_per_course": 17,        # stones in a full ring; chosen so the two
-                                    # stones in front of the opening fit exactly
+    "stones_per_course": 17,        # joints per ring; chosen so the two stones in
+                                    # front of the opening fit exactly
+    "stone_split_chance": 0.55,     # share of stones split into two smaller ones
+    "stone_split_joint": 0.006,     # joint between the halves of a split stone
     "stone_joint": 0.008,           # visible gap between stones in a course
     "stone_exposed": 0.13,          # radial stone depth in front of the backing
     "stone_bulge": 0.016,           # stones stand this far proud of the backing
-    "stone_depth_jitter": 0.016,     # per-stone radial depth variation
-    "stone_width_variation": 0.10,  # share of the width a stone may vary by
+    "stone_depth_jitter": 0.016,    # per-stone radial depth variation
+    "stone_width_variation": 0.14,  # share of the width a stone may vary by
     "stone_height_variation": 0.24,  # share of the course height a stone may lose
-    "stone_edge_jitter": 0.009,     # corner displacement -> irregular stones
-    "stone_azimuth_jitter_deg": 1.4,
-    "stone_tilt_jitter_deg": 2.0,
+    "stone_edge_jitter": 0.008,     # corner displacement -> irregular stones
+    "stone_azimuth_jitter_deg": 1.2,
+    "stone_tilt_jitter_deg": 1.8,
     "mortar_radius_share": 0.72,    # backing shell radius as a share of the
                                     # course radius (dark joints behind the stones)
     "mortar_thickness": 0.032,
-    # Cap: a rounded stone rim ring with a round throat for the fire; the
-    # pot nests into the throat, its grate resting on the rim's inner edge.
-    "plate_height": 0.055,          # crown of the rim above the top course
-    "plate_outer_diameter": 0.80,   # slight lip over the top course
-    "plate_inner_diameter": 0.36,   # throat diameter
-    "plate_segments": 17,           # matches stones_per_course for the bond
-    "plate_inner_share": 0.45,      # inner edge sits this share of the height up
-    "grate_bar_length": 0.34,       # bars span the throat and rest on the rim
+    # Cap: a narrow stone rim with a raised inner collar that hugs the
+    # cauldron's foot, so no glowing gap stays open between rim and pot.
+    "plate_outer_diameter": 0.82,   # 1 cm lip over the top course
+    "collar_height": 0.055,         # collar rises this far above the top course
+    "plate_height": 0.012,          # crown of the rim above the collar
+    "plate_inner_diameter": 0.30,   # collar bore, snug around the cauldron foot
+    "plate_segments": 17,           # radial joints of the inner ring (wall bond)
+    "plate_outer_segments": 12,     # outer ring, staggered against the inner one
+    "plate_mid_diameter": 0.58,     # boundary between the two rim rings
+    "plate_joint": 0.004,           # visible joint between the rim's stones
+    "plate_skirt": 0.055,           # rim reaches this far down into the top course
+    "grate_bar_length": 0.30,       # bars span the bore and rest on the collar
     "grate_bar_thickness": 0.022,
+    "grate_recess": 0.008,          # grate sits this far below the collar top
     "grate_bars": 3,
-    "throat_depth": 0.10,           # dark fire pit under the grate
     # Fire opening towards the front (-Y in Blender -> +Z in glTF).
     "opening_width": 0.24,          # clear width between the jambs (full extent)
     "opening_arch_radius": 0.12,    # = opening_width / 2 -> round arch
@@ -121,20 +127,30 @@ CONFIG = {
     "jamb_proud": 0.03,             # frame stands this far out of the wall
     "voussoir_count": 7,
     "chamber_depth": 0.11,          # dark interior behind the opening
-    "chamber_floor_height": 0.025,  # dark floor slab above the sill stones
-    # Embers (glowing coals) in the fire chamber and in the throat.
-    "ember_count": 9,
-    "ember_throat_count": 6,
-    "ember_size": (0.05, 0.05, 0.035),
-    "ember_floor_radius": (0.20, 0.25),   # centre distance from the oven axis
-    "ember_throat_radius": (0.04, 0.14),
-    "ember_sink": 0.006,            # coals sink this far into their floor
-    "ember_tint": 0.25,             # share of coals using the darker ember colour
+    "chamber_floor_height": 0.025,  # glowing floor slab above the sill stones
+    # Embers and flames in the fire chamber, kept in the front half so the
+    # 50 degree game camera sees them through the arched opening.
+    "ember_bed_size": (0.16, 0.045, 0.02),   # glowing bed on the chamber floor
+    "ember_bed_y": 0.250,           # centre distance of the bed from the oven axis
+    "ember_count": 7,
+    "ember_pile_count": 4,          # coals piled on top of the first layer
+    "ember_size": (0.05, 0.05, 0.04),
+    "ember_radius": (0.20, 0.25),   # centre distance from the oven axis
+    "ember_level": 0.175,           # z of the first coal layer
+    "ember_pile_level": 0.215,      # z of the piled coals
+    "ember_sink": 0.006,            # coals sink this far into their bed
+    "ember_tint": 0.30,             # share of coals using the darker ember colour
+    "flame_count": 3,
+    "flame_height": 0.21,           # bed to tip, reaching the opening's crown
+    "flame_radius": 0.033,
+    "flame_spread": 0.062,          # lateral offset of the tongues from the centre
+    "flame_lean": 0.030,            # sideways sweep of a tongue towards its tip
+    "flame_y": 0.245,               # centre distance of the tongues from the axis
     # Cauldron: dark cast iron, round belly, two ring handles.
-    "cauldron_foot_diameter": 0.26,
-    "cauldron_belly_diameter": 0.42,
-    "cauldron_rim_diameter": 0.37,
-    "cauldron_height": 0.34,        # foot bottom to rim (full extent)
+    "cauldron_foot_diameter": 0.27,
+    "cauldron_belly_diameter": 0.50,
+    "cauldron_rim_diameter": 0.45,
+    "cauldron_height": 0.35,        # foot bottom to rim (full extent)
     "cauldron_segments": 32,
     "cauldron_lip": 0.018,          # visible wall thickness at the rim
     "ear_radius": 0.034,            # ring handle radius
@@ -175,19 +191,23 @@ CONFIG = {
     # albedo_color; converted to linear for Blender and the GLB.
     "colors": {
         "stone": (0.63, 0.58, 0.50, 1.0),
-        "stone_alt": (0.50, 0.45, 0.38, 1.0),
-        "stone_dark": (0.41, 0.36, 0.31, 1.0),
+        "stone_alt": (0.57, 0.52, 0.45, 1.0),
+        "stone_dark": (0.50, 0.45, 0.39, 1.0),
         "mortar": (0.28, 0.25, 0.22, 1.0),
-        "soot": (0.13, 0.11, 0.10, 1.0),
+        "soot": (0.19, 0.15, 0.13, 1.0),
+        "chamber_glow": (0.70, 0.24, 0.06, 1.0),
         "iron": (0.21, 0.20, 0.20, 1.0),
-        "ember": (1.0, 0.52, 0.16, 1.0),
-        "ember_dark": (0.85, 0.32, 0.09, 1.0),
+        "ember": (1.0, 0.55, 0.18, 1.0),
+        "ember_dark": (0.88, 0.34, 0.10, 1.0),
+        "flame": (1.0, 0.74, 0.30, 1.0),
         "soup": (0.90, 0.42, 0.09, 1.0),
         "preview_ground": (0.42, 0.30, 0.20, 1.0),  # ground in game/scenes/garden.tscn
     },
     "emission": {                   # emission strength per colour key (0 = matte)
-        "ember": 3.5,
-        "ember_dark": 2.2,
+        "ember": 6.0,
+        "ember_dark": 3.4,
+        "chamber_glow": 1.1,
+        "flame": 8.0,
         "soup": 0.35,
     },
 }
@@ -216,9 +236,9 @@ SEPARATE_PARTS = (
 
 MATERIAL_NAMES = {
     "stone": "Mat_Stone", "stone_alt": "Mat_StoneAlt", "stone_dark": "Mat_StoneDark",
-    "mortar": "Mat_Mortar", "soot": "Mat_Soot", "iron": "Mat_Iron",
-    "ember": "Mat_EmberGlow", "ember_dark": "Mat_EmberGlowDark", "soup": "Mat_Soup",
-    "preview_ground": "Mat_PreviewGround",
+    "mortar": "Mat_Mortar", "soot": "Mat_Soot", "chamber_glow": "Mat_ChamberGlow",
+    "iron": "Mat_Iron", "ember": "Mat_EmberGlow", "ember_dark": "Mat_EmberGlowDark",
+    "flame": "Mat_Flame", "soup": "Mat_Soup", "preview_ground": "Mat_PreviewGround",
 }
 
 # Base material slots: three stone shades, then mortar, then iron.
@@ -286,11 +306,10 @@ def derive_dimensions(config: dict) -> dict:
     d["mortar_radius"] = shell_radius(config["base_height"] / 2.0, config) * config["mortar_radius_share"]
     d["mortar_radius"] = max(d["mortar_radius"], d["ref_radius"] - config["stone_exposed"] + 0.005)
 
-    d["plate_top"] = config["base_height"] + config["plate_height"]
-    # The rim's inner edge (where the grate rests) is lower than the crown.
-    d["cap_inner_top"] = config["base_height"] + config["plate_height"] * config["plate_inner_share"]
-    d["grate_top"] = d["cap_inner_top"] + config["grate_bar_thickness"]
-    d["throat_floor_z"] = d["cap_inner_top"] - config["throat_depth"]
+    d["plate_top"] = config["base_height"] + config["collar_height"] + config["plate_height"]
+    d["collar_top"] = config["base_height"] + config["collar_height"]
+    d["collar_inner"] = config["plate_inner_diameter"] / 2.0
+    d["grate_top"] = d["collar_top"] - config["grate_recess"]
     d["chamber_floor_z"] = config["opening_sill"] - config["chamber_floor_height"]
 
     d["cauldron_bottom"] = d["grate_top"]
@@ -333,43 +352,61 @@ def stone_layout(config: dict, dims: dict) -> list:
             full_width = 2.0 * r * math.sin(step / 2.0)
             width = (full_width - config["stone_joint"]) * (
                 1.0 - config["stone_width_variation"] * _hash01(course, k, 2.0))
-            height = ch * (1.0 - config["stone_height_variation"] * _hash01(course, k, 3.0)) - config["stone_joint"]
             depth = config["stone_exposed"] + config["stone_depth_jitter"] * (_hash01(course, k, 4.0) - 0.4)
-            radius = r - depth / 2.0 + config["stone_bulge"] * (_hash01(course, k, 5.0) - 0.35)
-            # The ground course keeps a flat bottom, so it must not tilt.
-            tilt = 0.0 if course == 0 else math.radians(config["stone_tilt_jitter_deg"]) * (_hash01(course, k, 6.0) - 0.5)
-            stones.append({
-                "course": course,
-                "azimuth": az,
-                "center": (radius * math.sin(az), FRONT_SIGN * radius * math.cos(az), z0 + height / 2.0),
-                "extents": (depth, width, height),
-                "tilt": tilt,
-                "seed": course * 100.0 + k,
-            })
+            # Roughly half the stones split into two flatter ones stacked on top
+            # of each other - more, smaller masonry without touching the joint
+            # lattice that keeps the opening's edges aligned.
+            split = _hash01(course, k, 7.0) < config["stone_split_chance"]
+            rows = [1.0] if not split else [0.52, 0.44]
+            z_cursor = z0
+            for half, share in enumerate(rows):
+                height = ch * share * (1.0 - config["stone_height_variation"]
+                                       * _hash01(course, k, 3.0 + half)) - config["stone_joint"]
+                radius = r - depth / 2.0 + config["stone_bulge"] * (_hash01(course, k, 5.0 + half) - 0.35)
+                # The ground course keeps a flat bottom, so it must not tilt.
+                tilt = 0.0 if course == 0 else math.radians(config["stone_tilt_jitter_deg"]) * (
+                    _hash01(course, k, 6.0 + half) - 0.5)
+                stones.append({
+                    "course": course,
+                    "azimuth": az + math.radians(0.8) * (_hash01(course, k, 9.0 + half) - 0.5),
+                    "center": (radius * math.sin(az), FRONT_SIGN * radius * math.cos(az),
+                               z_cursor + height / 2.0),
+                    "extents": (depth, width * (1.0 - 0.10 * half), height),
+                    "tilt": tilt,
+                    "seed": course * 1000.0 + k * 7.0 + half,
+                })
+                z_cursor += height + config["stone_joint"]
     return stones
 
 
-def cap_profile(config: dict, dims: dict) -> list:
-    """Closed ``(radius, z)`` cross-section of the rounded rim ring.
+def cap_profiles(config: dict, dims: dict) -> tuple:
+    """Closed ``(radius, z)`` cross-sections of the rim's inner and outer rings.
 
-    The inner edge (throat) sits low, the crown is at ``plate_height``, the
-    outer lip drops back to the top course - a rounded stone shoulder.
+    The inner ring carries the collar around the cauldron's foot and the sloping
+    shoulder; the outer ring closes the top and drops down over the stone course.
+    Both reach below the course so the rim plugs into the wall.
     """
     r_in = config["plate_inner_diameter"] / 2.0
+    r_mid = config["plate_mid_diameter"] / 2.0
     r_out = config["plate_outer_diameter"] / 2.0
-    z0 = config["base_height"]
-    h = config["plate_height"]
-    span = r_out - r_in
-    return [
-        (r_in, z0),
-        (r_in, z0 + config["plate_inner_share"] * h),
-        (r_in + span * 0.30, z0 + 0.75 * h),
-        (r_in + span * 0.62, z0 + h),
-        (r_out - 0.015, z0 + 0.80 * h),
-        (r_out, z0 + 0.40 * h),
-        (r_out, z0 + 0.15 * h),
-        (r_out - 0.03, z0),
+    z_bot = config["base_height"] - config["plate_skirt"]
+    z_collar = dims["collar_top"]
+    z_top = dims["plate_top"]
+    inner = [
+        (r_in, z_bot),
+        (r_in, z_collar),
+        (r_mid, z_top),
+        (r_mid, z_bot),
     ]
+    outer = [
+        (r_mid, z_bot),
+        (r_mid, z_top),
+        (r_out - 0.028, z_top - 0.008),
+        (r_out, z_top - 0.026),
+        (r_out, z_bot + 0.010),
+        (r_out - 0.020, z_bot),
+    ]
+    return inner, outer
 
 
 def voussoir_polygon(config: dict, dims: dict, phi0: float, phi1: float) -> list:
@@ -561,8 +598,8 @@ def _add_stone(bm, center, extents, rotation, material_index, jitter=0.0, seed=0
     return verts
 
 
-def _add_box(bm, center, extents, material_index, rotation=None) -> list:
-    return _add_stone(bm, center, extents, rotation, material_index)
+def _add_box(bm, center, extents, material_index, rotation=None, jitter=0.0, seed=0.0) -> list:
+    return _add_stone(bm, center, extents, rotation, material_index, jitter=jitter, seed=seed)
 
 
 def _wall_prism(bm, to3d, polygon, d_back, d_front, material_index) -> None:
@@ -578,19 +615,58 @@ def _wall_prism(bm, to3d, polygon, d_back, d_front, material_index) -> None:
         face.material_index = material_index
 
 
-def _lathe(bm, profile, segments, material_index) -> None:
-    """Surface of revolution around Z from a ``(radius, z)`` profile.
+def _lathe(bm, profile, segments, material_index, center=(0.0, 0.0)) -> None:
+    """Surface of revolution around a vertical axis through ``center``.
 
     A profile point with radius 0 becomes a single vertex (pole), so closed
     profiles (cauldron, throat pit) come out manifold.
     """
+    cx, cy = center
     rows = []
     for r, z in profile:
         if r <= 1e-9:
-            rows.append([bm.verts.new((0.0, 0.0, z))])
+            rows.append([bm.verts.new((cx, cy, z))])
         else:
-            rows.append([bm.verts.new((r * math.sin(2.0 * math.pi * j / segments),
-                                       FRONT_SIGN * r * math.cos(2.0 * math.pi * j / segments), z))
+            rows.append([bm.verts.new((cx + r * math.sin(2.0 * math.pi * j / segments),
+                                       cy + FRONT_SIGN * r * math.cos(2.0 * math.pi * j / segments), z))
+                         for j in range(segments)])
+    _bridge_rows(bm, rows, [material_index] * len(rows))
+
+
+def _arc_block(bm, profile, a0: float, a1: float, material_index) -> None:
+    """Closed stone block spanning a ``(radius, z)`` profile between two azimuths."""
+    def point(a, r, z):
+        return (r * math.sin(a), FRONT_SIGN * r * math.cos(a), z)
+
+    left = [bm.verts.new(point(a0, r, z)) for r, z in profile]
+    right = [bm.verts.new(point(a1, r, z)) for r, z in profile]
+    faces = [bm.faces.new(list(reversed(left))), bm.faces.new(right)]
+    n = len(profile)
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append(bm.faces.new((left[i], left[j], right[j], right[i])))
+    for face in faces:
+        face.material_index = material_index
+
+
+def _flame(bm, center, base_z, height, radius, lean, material_index) -> None:
+    """Tapered flame tongue with a slight sideways sweep, tip pointing up."""
+    cx, cy = center
+    profile = (
+        (0.0, 0.00), (radius * 0.85, 0.00), (radius, 0.12), (radius * 0.72, 0.40),
+        (radius * 0.42, 0.68), (radius * 0.16, 0.88), (0.0, 1.00),
+    )
+    segments = 10
+    rows = []
+    for r, t in profile:
+        z = base_z + height * t
+        dx = lean * t ** 1.4
+        dy = lean * 0.35 * t ** 1.4
+        if r <= 1e-9:
+            rows.append([bm.verts.new((cx + dx, cy + dy, z))])
+        else:
+            rows.append([bm.verts.new((cx + dx + r * math.sin(2.0 * math.pi * j / segments),
+                                       cy + dy + FRONT_SIGN * r * math.cos(2.0 * math.pi * j / segments), z))
                          for j in range(segments)])
     _bridge_rows(bm, rows, [material_index] * len(rows))
 
@@ -648,20 +724,27 @@ def build_base(config: dict, dims: dict):
                    jitter=config["stone_edge_jitter"], seed=stone["seed"],
                    keep_bottom=stone["course"] == 0)
 
-    # Rounded stone rim: one ring, shaded stone by stone.
-    profile = cap_profile(config, dims)
-    seg = config["plate_segments"]
-    rows = [[bm.verts.new((r * math.sin(2.0 * math.pi * j / seg),
-                           FRONT_SIGN * r * math.cos(2.0 * math.pi * j / seg), z))
-             for j in range(seg)] for r, z in profile]
-    band_materials = [[int(_hash01(band, j, 40.0) * 3.0) % 3 for j in range(seg)]
-                      for band in range(len(rows))]
-    _bridge_rows(bm, rows, band_materials, loop=True)
+    # Narrow stone rim: two staggered rings of blocks - inner ring with the
+    # collar, outer ring closing the top - so it reads as a paved capping course.
+    inner, outer = cap_profiles(config, dims)
+    for profile, count, phase, seed in (
+        (inner, config["plate_segments"], 0.0, 41.0),
+        (outer, config["plate_outer_segments"], 0.5, 61.0),
+    ):
+        step = 2.0 * math.pi / count
+        r_mid = sum(r for r, _z in profile) / len(profile)
+        gap = config["plate_joint"] / max(r_mid, 0.1)
+        for j in range(count):
+            roll = _hash01(j, seed)
+            shade = 0 if roll < 0.70 else (1 if roll < 0.90 else 2)
+            _arc_block(bm, profile, step * (j + phase) + gap / 2.0,
+                       step * (j + phase + 1) - gap / 2.0, shade)
 
-    # Grate: iron bars across the throat, resting on the rim's inner edge.
-    bar_z = dims["cap_inner_top"] + config["grate_bar_thickness"] / 2.0
+    # Grate: iron bars recessed in the collar's bore, the cauldron resting on
+    # them so the rim's collar hides the gap around the pot's foot.
+    bar_z = dims["grate_top"] - config["grate_bar_thickness"] / 2.0
     for i in range(config["grate_bars"]):
-        offset = (i - (config["grate_bars"] - 1) / 2.0) * 0.065
+        offset = (i - (config["grate_bars"] - 1) / 2.0) * 0.055
         _add_box(bm, (0.0, offset, bar_z),
                  (config["grate_bar_length"], config["grate_bar_thickness"],
                   config["grate_bar_thickness"]), iron_slot)
@@ -677,6 +760,7 @@ def build_fire_opening(config: dict, dims: dict):
     read its translation.
     """
     soot_slot = 2
+    glow_slot = 3
     bm = bmesh.new()
     ref = dims["ref_radius"]
 
@@ -703,13 +787,14 @@ def build_fire_opening(config: dict, dims: dict):
         phi1 = math.pi * (i + 1) / count
         _wall_prism(bm, to3d, voussoir_polygon(config, dims, phi0, phi1), d_back, d_front, 1 if i % 2 else 0)
 
-    # Fire chamber: dark floor, back and side slabs plus a ceiling.
+    # Fire chamber: glowing floor, dark back and side slabs plus a ceiling, so
+    # the opening is never a black hole.
     ceiling_z = dims["arch_top"] + 0.055
     floor_z = dims["chamber_floor_z"] + config["chamber_floor_height"] / 2.0
     chamber_y = ref - config["stone_exposed"] - config["chamber_depth"] / 2.0
     width = 2.0 * outer
     _add_box(bm, (0.0, -chamber_y + config["chamber_depth"] / 2.0 - 0.02, floor_z),
-             (width, config["chamber_depth"] + 0.06, config["chamber_floor_height"]), soot_slot)
+             (width, config["chamber_depth"] + 0.06, config["chamber_floor_height"]), glow_slot)
     _add_box(bm, (0.0, -chamber_y, (floor_z + ceiling_z) / 2.0),
              (width, 0.02, ceiling_z - floor_z), soot_slot)
     for sign in (-1.0, 1.0):
@@ -718,47 +803,64 @@ def build_fire_opening(config: dict, dims: dict):
     _add_box(bm, (0.0, -chamber_y + 0.02, ceiling_z),
              (width, config["chamber_depth"] + 0.04, 0.03), soot_slot)
 
-    # Throat pit: a dark cup under the grate, up to the rim's inner edge.
-    r_throat = config["plate_inner_diameter"] / 2.0 - 0.01
+    # Dark plug inside the collar's bore, keeping the view from above off the
+    # drum's hollow interior.
+    r_plug = dims["collar_inner"] - 0.015
+    plug_top = dims["grate_top"] - 0.005
     _lathe(bm, [
-        (0.0, dims["throat_floor_z"]), (r_throat, dims["throat_floor_z"]),
-        (r_throat, dims["cap_inner_top"]), (r_throat + 0.02, dims["cap_inner_top"]),
-        (r_throat + 0.02, dims["throat_floor_z"] - 0.02),
+        (0.0, plug_top - 0.10), (r_plug, plug_top - 0.10),
+        (r_plug, plug_top), (0.0, plug_top),
     ], config["cauldron_segments"], soot_slot)
 
     origin = wall_point(0.0, dims["opening_mid_z"], config["jamb_proud"], config, ref)
-    return _object_from_bmesh("FireOpening", bm, _materials(config, ["stone", "stone_alt", "soot"]),
+    return _object_from_bmesh("FireOpening", bm,
+                              _materials(config, ["stone", "stone_alt", "soot", "chamber_glow"]),
                               origin=origin, sharp_angle_deg=config["smooth_angle_deg"])
 
 
 def build_embers(config: dict, dims: dict):
-    """Glowing coals on the fire-chamber floor and in the throat."""
+    """Glowing ember bed with coals and flame tongues in the fire chamber."""
     bm = bmesh.new()
-    low, high = config["ember_floor_radius"]
     sx, sy, sz = config["ember_size"]
+    bed_y = config["ember_bed_y"]
+
+    # Glowing bed on the chamber floor, right behind the sill.
+    bed_x, bed_dy, bed_h = config["ember_bed_size"]
+    _add_box(bm, (0.0, -bed_y, config["opening_sill"] - bed_h / 2.0 + 0.004),
+             (bed_x, bed_dy, bed_h), 0, jitter=0.004)
+
+    low, high = config["ember_radius"]
     for i in range(config["ember_count"]):
         r = low + (high - low) * _hash01(i, 31.0)
         angle = math.radians(_hash01(i, 32.0) * 70.0) - math.radians(35.0)
-        z = config["opening_sill"] + sz / 2.0 - config["ember_sink"]
-        size = (sx * (0.6 + 0.8 * _hash01(i, 33.0)), sy * (0.6 + 0.8 * _hash01(i, 34.0)),
-                sz * (0.6 + 0.8 * _hash01(i, 35.0)))
+        z = config["ember_level"] + sz * 0.3 * (_hash01(i, 38.0) - 0.5)
+        size = (sx * (0.6 + 0.7 * _hash01(i, 33.0)), sy * (0.6 + 0.7 * _hash01(i, 34.0)),
+                sz * (0.6 + 0.7 * _hash01(i, 35.0)))
         material = 1 if _hash01(i, 36.0) < config["ember_tint"] else 0
-        _add_stone(bm, (r * math.sin(angle), -(r * math.cos(angle)), z), size,
+        _add_stone(bm, (r * math.sin(angle), -(r * math.cos(angle)), z - config["ember_sink"]), size,
                    Matrix.Rotation(math.radians(360.0 * _hash01(i, 37.0)), 3, 'Z'), material,
                    jitter=0.012, seed=900.0 + i)
-    low_t, high_t = config["ember_throat_radius"]
-    for i in range(config["ember_throat_count"]):
-        r = low_t + (high_t - low_t) * _hash01(i, 40.0)
-        angle = 2.0 * math.pi * _hash01(i, 41.0)
-        z = dims["throat_floor_z"] + sz / 2.0 - config["ember_sink"]
-        material = 1 if _hash01(i, 42.0) < config["ember_tint"] else 0
-        _add_stone(bm, (r * math.sin(angle), -r * math.cos(angle), z),
+    for i in range(config["ember_pile_count"]):
+        r = low + (high - low) * _hash01(i, 45.0) * 0.85
+        angle = math.radians(_hash01(i, 46.0) * 50.0) - math.radians(25.0)
+        material = 1 if _hash01(i, 47.0) < config["ember_tint"] else 0
+        _add_stone(bm, (r * math.sin(angle), -(r * math.cos(angle)), config["ember_pile_level"]),
                    (sx * 0.8, sy * 0.8, sz * 0.8),
-                   Matrix.Rotation(math.radians(360.0 * _hash01(i, 43.0)), 3, 'Z'), material,
+                   Matrix.Rotation(math.radians(360.0 * _hash01(i, 48.0)), 3, 'Z'), material,
                    jitter=0.012, seed=950.0 + i)
 
+    # Flame tongues rising in the front half of the chamber.
+    flame_y = config["flame_y"]
+    for i in range(config["flame_count"]):
+        spread = (i - (config["flame_count"] - 1) / 2.0) * config["flame_spread"]
+        lean = config["flame_lean"] * (1.0 if i % 2 else -0.6)
+        height = config["flame_height"] * (0.75 + 0.45 * _hash01(i, 50.0))
+        _flame(bm, (spread, -flame_y), config["opening_sill"] + 0.01, height,
+               config["flame_radius"] * (0.85 + 0.3 * _hash01(i, 51.0)), lean, 2)
+
     origin = (0.0, -dims["ref_radius"] + config["stone_exposed"], config["opening_sill"])
-    return _object_from_bmesh("Embers", bm, _materials(config, ["ember", "ember_dark"]),
+    return _object_from_bmesh("Embers", bm,
+                              _materials(config, ["ember", "ember_dark", "flame"]),
                               origin=origin, sharp_angle_deg=config["smooth_angle_deg"])
 
 
@@ -871,7 +973,7 @@ def report_geometry(collection, config: dict, dims: dict) -> list:
     print(f"[{ASSET_NAME}] Triangles total {total} (budget {config['triangle_budget']})")
     print(f"[{ASSET_NAME}] Built height {max_z - min_z:.3f} (lowest point {min_z:.4f}, "
           f"derived top {dims['total_height']:.3f})")
-    print(f"[{ASSET_NAME}] Oven body {config['base_height'] + config['plate_height']:.3f} m tall, "
+    print(f"[{ASSET_NAME}] Oven body {dims['plate_top']:.3f} m tall, "
           f"cauldron rim {dims['cauldron_top']:.3f} m, opening crown {dims['crown']:.3f} m")
     if total > config["triangle_budget"]:
         failures.append(f"triangle budget exceeded: {total} > {config['triangle_budget']}")
