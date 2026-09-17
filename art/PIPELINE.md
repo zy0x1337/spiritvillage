@@ -252,13 +252,14 @@ Sessions parallel, wird `docs/STATUS.md` beim Pull zusammengeführt statt
 | S1 | Godot-Projekt-Grundgerüst | DeepSeek · medium | – | ✅ `025546e` |
 | S2 | Intake-Skript und Herkunftsnachweis | DeepSeek · medium, Review Claude · low | S0, S1 | ✅ `3cb4625` |
 | S3 | Lineup und Player-Entscheidung | Claude · high | S2 | ✅ |
-| S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9 | offen |
+| S4 | Garten-Szene in Godot | DeepSeek · medium, Sichtprüfung Claude · medium | S2, S3, S8, S9b | offen |
 | S5 | Gemeinsamer Wesen-Grundkörper + Waldwesen | Claude · high | S3 | ✅ |
 | S6 | Prozedurale Animationen | DeepSeek · medium, Sichtprüfung Claude · low | S4, S5 | offen |
 | S7 | Icon-Renderer | DeepSeek · low | S2 | offen |
 | S8 | Gebäude-Generator: Wurzelheim-Häuschen | Claude · high | – | ✅ `4e1b8d0`, Nacharbeit S8b |
-| S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | offen |
-| S8b | Häuschen-Nacharbeit: Dach und Stufen | Claude · medium | S8 | ✅ |
+| S9 | Station: Steinofen mit Kessel | DeepSeek · medium, Sichtprüfung Claude · medium | S8 | ✅ `f98c4f7`, Nacharbeit S9b |
+| S8b | Häuschen-Nacharbeit: Dach und Stufen | Claude · medium | S8 | ✅ `c9b90ad` |
+| S9b | Ofen-Nacharbeit: Feuerschein vorn, Steine, Rand | DeepSeek · low, Sichtprüfung Claude · low | S9 | offen |
 
 ### S0 – Pakete ablegen (Nutzer) ✅
 
@@ -416,6 +417,22 @@ Hintergrund, feste 3/4-Kamera, gleiches Licht; Ausgabe
 - **Schreibbereich:** `art/generators/bldg_cottage.py`,
   `docs/previews/bldg_cottage*.png`, `art/README.md` (Abschnitt Gebäude),
   `docs/STATUS.md`. Nicht parallel zu S9 an denselben Dateien.
+
+### S9b – Ofen-Nacharbeit (DeepSeek · low)
+
+- **Ist:** `art/generators/bldg_oven.py` (S9, 2 992 Dreiecke), Renders
+  `docs/previews/bldg_oven*.png`. Sichtprüfung Claude gegen `mockup.png`:
+  Aus 50° ist die vordere Feueröffnung ein schwarzes Loch; die Glut sieht man
+  nur von oben zwischen Rand und Kessel. Der Rand ist eine breite, flache
+  Platte mit Schachbrettmuster und wirkt größer als der Ofen. Die Mauersteine
+  sind grob und gleichförmig; der Körper liest sich eher als Bienenkorb.
+- **Aufgabe:** Glut/Feuer in der vorderen Öffnung aus 50° deutlich sichtbar
+  (nach vorn und oben ziehen, heller, evtl. kleine Flammenzungen); Blick
+  von oben auf die Glut schließen; Rand schmaler; mehr, kleinere, leicht
+  unterschiedlich gefärbte Steine; Körper zylindrischer. Budget ≤ 4 000.
+- **Abnahme:** wie S9; `bldg_oven_game3x.png`: Feuerschein vorn erkennbar.
+- **Schreibbereich:** `art/generators/bldg_oven.py`,
+  `docs/previews/bldg_oven*.png`, `docs/STATUS.md`.
 
 ## 10. Offene Entscheidungen
 
