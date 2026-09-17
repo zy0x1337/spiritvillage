@@ -13,6 +13,9 @@ __pycache__/
 # in the repo, e.g. under art/assets/ once that convention exists).
 /build/
 
+# Godot (import cache; *.import and other imported resources stay versioned)
+game/.godot/
+
 # OS cruft
 .DS_Store
 Thumbs.db

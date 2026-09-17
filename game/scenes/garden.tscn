@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
+albedo_color = Color(0.42, 0.3, 0.2, 1)
+metallic = 0.0
+metallic_specular = 0.15
+roughness = 1.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
+size = Vector2(8, 8)
+material = SubResource("StandardMaterial3D_ground")
+
+[sub_resource type="Environment" id="Environment_garden"]
+background_mode = 1
+background_color = Color(0.94, 0.9, 0.82, 1)
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.94, 0.85, 1)
+ambient_light_energy = 0.6
+tonemap_mode = 2
+
+[node name="Garden" type="Node3D"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+position = Vector3(0, 9.1925, 7.7135)
+rotation_degrees = Vector3(-50, 0, 0)
+projection = 1
+size = 18.0
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-50, -40, 0)
+light_color = Color(1, 0.96, 0.87, 1)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_garden")
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_ground")
