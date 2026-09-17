@@ -109,6 +109,18 @@
       "package": "own generator art/generators/garden_wight.py",
       "edition": "project",
       "license": "project"
+    },
+    {
+      "id": "char_forest_spirit",
+      "source_root": "repo",
+      "source": "build/characters/forest_spirit/forest_spirit.glb",
+      "target": "game/assets/characters/char_forest_spirit.glb",
+      "rotate_y_deg": 0,
+      "scale": 1.0,
+      "material_map": {},
+      "package": "own generator art/generators/forest_spirit.py",
+      "edition": "project",
+      "license": "project"
     }
   ]
 }

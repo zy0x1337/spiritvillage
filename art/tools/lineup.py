@@ -39,11 +39,12 @@ CANDIDATES = (
     ("crop_carrot_crop", "game/assets/crops/crop_carrot_crop.glb"),
     ("prop_barrel", "game/assets/props/prop_barrel.glb"),
     ("char_garden_wight", "game/assets/characters/char_garden_wight.glb"),
+    ("char_forest_spirit", "game/assets/characters/char_forest_spirit.glb"),
     ("char_mushnub", "game/assets/characters/char_mushnub.glb"),
     ("bldg_cottage", "build/buildings/bldg_cottage/bldg_cottage.glb"),
     ("tree_common_1", "game/assets/nature/tree_common_1.glb"),
 )
-FIGURE_GROUP = ("crop_carrot_4", "prop_barrel", "char_garden_wight", "char_mushnub")
+FIGURE_GROUP = ("crop_carrot_4", "prop_barrel", "char_garden_wight", "char_forest_spirit", "char_mushnub")
 
 CELL_GAP = 0.3            # minimum free space between footprints (m)
 PITCH_DEG = 50.0
@@ -221,9 +222,10 @@ def main() -> None:
     x1 = max(o.matrix_world.translation.x for g in group for o in g["objects"] if o.parent is None) + 1.2
     for factor in FIGURE_SCALES:
         frame(scene, camera, x0, x1, -1.2, 1.2, 1.4, PX_PER_M * factor)
-        wight = pixel_height(scene, camera, placed["char_garden_wight"]["objects"])
-        print(f"[lineup] figures {factor}x: Garden Wight {wight:.0f} px, "
-              f"Mushnub {pixel_height(scene, camera, placed['char_mushnub']['objects']):.0f} px")
+        heights = ", ".join(
+            f"{label} {pixel_height(scene, camera, placed[label]['objects']):.0f} px"
+            for label in ("char_garden_wight", "char_forest_spirit", "char_mushnub"))
+        print(f"[lineup] figures {factor}x: {heights}")
         render(scene, output_dir / f"lineup_figures_{str(factor).replace('.', '_')}x.png")
 
 
